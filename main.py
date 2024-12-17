@@ -1,8 +1,15 @@
 import argparse
 import prepare_data
+import pandas as pd 
+from voronoi_diagrams import voronoi_diagrams
+
+
 
 def main(args):
-    prepare_data.read_data(args.data_path)
+    df = prepare_data.read_data(args.data_path)
+    voronoi_diagrams(df)
+    
+   
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("parser for solution pipes pattern analysis")
