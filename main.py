@@ -1,15 +1,17 @@
 import argparse
 import prepare_data
 import pandas as pd 
-from voronoi_diagrams import voronoi_diagrams
-
-
+import numpy as np
+import voronoi_analysis
+import matplotlib.pyplot as plt
 
 def main(args):
     df = prepare_data.read_data(args.data_path)
-    voronoi_diagrams(df)
-    
-   
+    voronoi_analyser = voronoi_analysis.VoronoiAnalyser(df)
+    voronoi_analyser.all_voronoi_diagram()
+    voronoi_analyser.count_sides()
+    voronoi_analyser.calculate_areas()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("parser for solution pipes pattern analysis")
