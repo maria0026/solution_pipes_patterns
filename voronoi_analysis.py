@@ -1,15 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial import Voronoi,  voronoi_plot_2d
+import math
 
 class VoronoiAnalyser:
     def __init__(self, df):
         print("Voronoi analyser initialized")
         self.df=df
         self.points = np.column_stack((df["Center x coordinate"], df["Center y coordinate"]))
-        self.voronoi=Voronoi(self.points)
-        self.ventricles = self.voronoi.vertices
+        self.voronoi = Voronoi(self.points)
+        self.vertices = self.voronoi.vertices
         self.regions = self.voronoi.regions
+        self.point_to_region = self.voronoi.point_region
+        self.ridge_points = self.voronoi.ridge_points
 
     def all_voronoi_diagram(self):
         fig, ax = plt.subplots(figsize=(8, 6))
@@ -57,9 +60,39 @@ class VoronoiAnalyser:
     def calculate_polygon_area(self, region):
         points = []
         for point in region:
-            x=self.ventricles[point, 0]
-            y=self.ventricles[point, 1]
+            x=self.vertices[point, 0]
+            y=self.vertices[point, 1]
             points.append([x, y])
         lines = np.hstack([points,np.roll(points,-1,axis=0)])
         area = 0.5*abs(sum(x1*y2-x2*y1 for x1,y1,x2,y2 in lines))
         return area
+    
+
+    def calculate_distance_between_neighbours(self):
+        distances = []
+        checked_pairs = set()  
+        for ridge in self.ridge_points:
+            point1_index, point2_index = ridge  
+            if (point1_index, point2_index) in checked_pairs or (point2_index, point1_index) in checked_pairs:
+                continue  
+            point1 = self.points[point1_index]
+            point2 = self.points[point2_index]
+            distance = np.linalg.norm(point1 - point2)
+            distances.append(distance)
+            checked_pairs.add((point1_index, point2_index))
+
+        distances = np.array(distances)
+        number_of_bins = int(np.max(distances)-np.min(distances))
+        plt.hist(distances, bins=number_of_bins, edgecolor='black')
+        plt.locator_params(axis='y', integer=True)
+        plt.xlim(0,30)
+        #plt.xlim(0, math.ceil(np.max(distances))) #250
+        plt.xlabel("Distance")
+        #plt.ylabel("Number of ?")
+        plt.show()
+        return distances
+
+        
+        
+                    
+

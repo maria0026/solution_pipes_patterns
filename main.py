@@ -11,6 +11,7 @@ def main(args):
     voronoi_analyser.all_voronoi_diagram()
     voronoi_analyser.count_sides()
     voronoi_analyser.calculate_areas()
+    voronoi_analyser.calculate_distance_between_neighbours()
 
 
 if __name__ == "__main__":
