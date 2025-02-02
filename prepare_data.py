@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 def read_data(path):
     data = []
@@ -12,3 +13,13 @@ def read_data(path):
     df["Center y coordinate"] = pd.to_numeric(df["Center y coordinate"], errors="coerce")
     df["Pipe radius"] = pd.to_numeric(df["Pipe radius"], errors="coerce")
     return df
+
+def min_distance(points):
+    min_dist = np.inf
+    for i in range(len(points)):
+        for j in range(i+1, len(points)):
+            dist = np.linalg.norm(points[i] - points[j])
+            if dist < min_dist:
+                min_dist = dist
+    return min_dist
+
