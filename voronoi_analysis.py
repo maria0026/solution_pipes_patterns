@@ -7,15 +7,21 @@ class VoronoiAnalyser:
     def __init__(self, df):
         print("Voronoi analyser initialized")
         self.df=df
-        self.df = self.df.dropna(subset=['Center x coordinate', 'Center y coordinate']).drop_duplicates()
+        self.df = self.df.dropna(subset=['Center x coordinate', 'Center y coordinate', 'Point of Voronoi']).drop_duplicates()
         self.points = np.column_stack((df["Center x coordinate"], df["Center y coordinate"]))
         self.voronoi = Voronoi(self.points)
         self.vertices = self.voronoi.vertices
         self.regions = self.voronoi.regions
         self.point_to_region = self.voronoi.point_region
         self.ridge_points = self.voronoi.ridge_points
-        print(len(self.regions))
+        self.voronoi_points = df["Point of Voronoi"]
+        print("Number of points: ", len(self.points))
+        print("Number of regions: ", len(self.regions))
+        print("Number of connections :", len(self.point_to_region))
+        print("Valid points: ", self.voronoi_points.sum())
 
+    '''
+    #to chyba do usunięcia?
     def is_point_inside_voronoi(self, point):
         """ Sprawdzenie, czy punkt znajduje się wewnątrz diagramu Voronoja """
         region_idx = self.voronoi.point_region[point]
@@ -24,6 +30,7 @@ class VoronoiAnalyser:
         if -1 in region:  # Jeśli region zawiera -1, oznacza to, że komórka jest otwarta (nieskończona)
             return False
         return True
+    '''
 
 
     def calculate_areas(self):

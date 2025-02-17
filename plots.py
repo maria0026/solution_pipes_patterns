@@ -76,5 +76,5 @@ class Voronoi_Plotter(VoronoiAnalyser):
         #plt.xlim(0, math.ceil(np.max(distances))) #250
         plt.legend()
         plt.xlabel("Distance")
-        plt.ylabel("Number of neughbours in voronoi")
+        plt.ylabel("Number of neighbours in voronoi")
         plt.show()
