@@ -6,7 +6,7 @@ from scipy.spatial import Voronoi,  voronoi_plot_2d
 
 class VoronoiPreprocess:
     def __init__(self, df):
-        print("Voronoi analyser initialized")
+        print("Voronoi preprocessor initialized")
         self.df=df
         self.df = self.df.dropna(subset=['Center x coordinate', 'Center y coordinate']).drop_duplicates()
         self.points = np.column_stack((df["Center x coordinate"], df["Center y coordinate"]))
@@ -37,8 +37,8 @@ class VoronoiPreprocess:
 
 def main(args):
     df = prepare_data.read_original_data(args.data_path)
-    voronoi_analyser = VoronoiPreprocess(df)
-    print("Points that have a region: ", voronoi_analyser.mark_points_without_regions())
+    voronoi_preprocessor = VoronoiPreprocess(df)
+    print("Points that have a region: ", voronoi_preprocessor.mark_points_without_regions())
 
 
 
