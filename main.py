@@ -7,33 +7,23 @@ import plots
 import matplotlib.pyplot as plt
 
 def main(args):
-    df = prepare_data.read_preprocessed_data(args.data_path)
+    df = prepare_data.read_data(args.data_path, preprocessed=True)
     voronoi_analyser = voronoi_analysis.VoronoiAnalyser(df)
-    '''
-    # Testowanie, które punkty mają pełne komórki
-    points = df[["Center x coordinate", "Center y coordinate"]].dropna().values
-    full_cells = []
-    for i, point in enumerate(points):
-        if voronoi_analyser.is_point_inside_voronoi(i):
-            full_cells.append(i)
-
-    print("Punkty z pełnymi komórkami Voronoja:", len(full_cells))
-    '''
     voronoi_plotter = plots.Voronoi_Plotter(df)
 
-    #voronoi_plotter.all_voronoi_diagram()
-    #voronoi_plotter.all_voronoi_diagram_area_filtered()
+    voronoi_plotter.all_voronoi_diagram()
+    voronoi_plotter.all_voronoi_diagram_area_filtered(args.area_limit)
 
-    areas=voronoi_analyser.calculate_areas()
-    areas=voronoi_analyser.filter_by_area(areas, args.area_limit)
+    areas=df['Area']
+    areas=[area for area in areas if area<=args.area_limit]
     #voronoi_plotter.areas_hist(areas)
-
+    '''
     sides=voronoi_analyser.calculate_sides()
     #voronoi_plotter.sides_number_hist(sides)
 
     distances=voronoi_analyser.calculate_distance_between_neighbours()
     #voronoi_plotter.distance_between_neighbours_hist(distances)
-
+    '''
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("parser for solution pipes pattern analysis")
