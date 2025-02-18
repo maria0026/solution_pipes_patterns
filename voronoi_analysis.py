@@ -9,37 +9,17 @@ class VoronoiAnalyser:
         self.df=df
         self.df = self.df.dropna(subset=['Center x coordinate', 'Center y coordinate', 'Point of Voronoi']).drop_duplicates()
         self.points = np.column_stack((df["Center x coordinate"], df["Center y coordinate"]))
+        self.good_point=df["Point of Voronoi"]
         self.voronoi = Voronoi(self.points)
         self.vertices = self.voronoi.vertices
         self.regions = self.voronoi.regions
         self.point_to_region = self.voronoi.point_region
         self.ridge_points = self.voronoi.ridge_points
         self.voronoi_points = df["Point of Voronoi"]
-        print("Number of points: ", len(self.points))
-        print("Number of regions: ", len(self.regions))
-        print("Number of connections :", len(self.point_to_region))
-        print("Valid points: ", self.voronoi_points.sum())
-
-    '''
-    #to chyba do usunięcia?
-    def is_point_inside_voronoi(self, point):
-        """ Sprawdzenie, czy punkt znajduje się wewnątrz diagramu Voronoja """
-        region_idx = self.voronoi.point_region[point]
-        region = self.voronoi.regions[region_idx]
         
-        if -1 in region:  # Jeśli region zawiera -1, oznacza to, że komórka jest otwarta (nieskończona)
-            return False
-        return True
-    '''
-
-
     def calculate_areas(self):
         areas=[]
-        self.df['good_point']={}
         for region in self.regions:
-            #if -1 in region: #-1 is the index of the region that is unbounded
-                #pass
-            #else:
             area=self.calculate_polygon_area(region)
             areas.append(area)
         return areas
@@ -53,21 +33,10 @@ class VoronoiAnalyser:
         lines = np.hstack([points,np.roll(points,-1,axis=0)])
         area = 0.5*abs(sum(x1*y2-x2*y1 for x1,y1,x2,y2 in lines))
         return area
-    
-    def filter_by_area(self, areas, area_limit):
-        for i, area in enumerate(areas):
-            if area>area_limit:
-                self.df.loc[i, 'good_point']=0
-            else:
-                self.df.loc[i, 'good_point']=1
-        areas=[area for area in areas if area<=area_limit]
-        print(self.df)
-        return areas
 
     def calculate_sides(self):
         sides=[]
         for i, region in enumerate(self.regions):
-            area=self.calculate_polygon_area(region)
             if self.df.loc[i,'good_point']==1:
                 sides.append(len(region))
         return sides
