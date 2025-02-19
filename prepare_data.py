@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
-from scipy.spatial import Voronoi
-from voronoi_analysis import VoronoiAnalyser
+from voronoi import BaseVoronoi
 
 def read_data(path, preprocessed=False):
     """
@@ -26,7 +25,7 @@ def read_data(path, preprocessed=False):
             data.append(value)
 
     if preprocessed:
-        columns = ["Pipe radius", "Center x coordinate", "Center y coordinate", "Point of Voronoi", "Area"]
+        columns = ["Pipe radius", "Center x coordinate", "Center y coordinate", "Point of Voronoi", "Area", "Region index"]
     else:
         columns = ["Pipe radius", "Center x coordinate", "Center y coordinate"]
 
@@ -39,20 +38,15 @@ def read_data(path, preprocessed=False):
     if preprocessed:
         df["Point of Voronoi"] = pd.to_numeric(df["Point of Voronoi"], errors="coerce")
         df["Area"] = pd.to_numeric(df["Area"], errors="coerce")
+        df["Region index"] = pd.to_numeric(df["Region index"], errors="coerce")
 
     return df
 
 
-class VoronoiPreprocess():
+class VoronoiPreprocess(BaseVoronoi):
     def __init__(self, df):
+        super().__init__(df)
         print("Voronoi preprocessor initialized")
-        self.df=df
-        self.df = self.df.dropna(subset=['Center x coordinate', 'Center y coordinate']).drop_duplicates()
-        self.points = np.column_stack((df["Center x coordinate"], df["Center y coordinate"]))
-        self.voronoi = Voronoi(self.points)
-        self.vertices = self.voronoi.vertices
-        self.regions= self.voronoi.regions
-        self.point_to_region = self.voronoi.point_region
         print("Number of points: ", len(self.points))
         print("Number of regions: ", len(self.regions))
         print("Number of connections :", len(self.point_to_region))
@@ -102,6 +96,6 @@ class VoronoiPreprocess():
             df_copy.loc[i, 'Area']= areas[region_index]
             if areas[region_index] > area_limit:
                 df_copy.loc[i, 'Point of Voronoi'] = 0 
-
+            df_copy.loc[i, 'Region index']= region_index
         return df_copy
 
