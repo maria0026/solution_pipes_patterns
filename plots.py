@@ -86,4 +86,7 @@ class Voronoi_Plotter(VoronoiAnalyser):
     def order_hist(self, order):
         plt.hist(order, bins = 20,  edgecolor='black', label=f'Mean {np.mean(order):.2f}, std {np.std(order):.2f}')
         plt.title("Orientational order")
+        plt.legend()
+        plt.xlabel("Order parameter")
+        plt.ylabel("Number of points")
         plt.show()
