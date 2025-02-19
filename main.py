@@ -14,24 +14,18 @@ def main(args):
     #voronoi_plotter.all_voronoi_diagram()
     #voronoi_plotter.all_voronoi_diagram_area_filtered(args.area_limit)
 
-    areas=df['Area']
-    areas=[area for area in areas if area<=args.area_limit]
-
-
-    order = voronoi_analyser.calculate_orientational_order()
-    print(order)
-    voronoi_plotter.order_hist(order)
-
-
-
+    areas = df.loc[df["Point of Voronoi"] == 1, "Area"]
     #voronoi_plotter.areas_hist(areas)
-    '''
+
     sides=voronoi_analyser.calculate_sides()
     #voronoi_plotter.sides_number_hist(sides)
-
+    
     distances=voronoi_analyser.calculate_distance_between_neighbours()
     #voronoi_plotter.distance_between_neighbours_hist(distances)
-    '''
+
+    order = voronoi_analyser.calculate_orientational_order()
+    voronoi_plotter.order_hist(order)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("parser for solution pipes pattern analysis")
