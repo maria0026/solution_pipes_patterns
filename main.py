@@ -11,11 +11,19 @@ def main(args):
     voronoi_analyser = voronoi_analysis.VoronoiAnalyser(df)
     voronoi_plotter = plots.Voronoi_Plotter(df)
 
-    voronoi_plotter.all_voronoi_diagram()
-    voronoi_plotter.all_voronoi_diagram_area_filtered(args.area_limit)
+    #voronoi_plotter.all_voronoi_diagram()
+    #voronoi_plotter.all_voronoi_diagram_area_filtered(args.area_limit)
 
     areas=df['Area']
     areas=[area for area in areas if area<=args.area_limit]
+
+
+    order = voronoi_analyser.calculate_orientational_order()
+    print(order)
+    voronoi_plotter.order_hist(order)
+
+
+
     #voronoi_plotter.areas_hist(areas)
     '''
     sides=voronoi_analyser.calculate_sides()

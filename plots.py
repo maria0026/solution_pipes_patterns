@@ -22,7 +22,7 @@ class Voronoi_Plotter(VoronoiAnalyser):
         ax.set_xlabel("X Coordinate", fontsize=14)
         ax.set_ylabel("Y Coordinate", fontsize=14)
         ax.grid(True)
-        ax.legend()
+        #ax.legend()
         #Zooming in:
         #ax.set_xlim(531925, 531975)
         #ax.set_ylim(5752275, 5752325)
@@ -40,7 +40,7 @@ class Voronoi_Plotter(VoronoiAnalyser):
         ax.set_xlabel("X Coordinate", fontsize=14)
         ax.set_ylabel("Y Coordinate", fontsize=14)
         ax.grid(True)
-        ax.legend()
+        #ax.legend()
         #ax.set_xlim(531925, 531975)
         #ax.set_ylim(5752275, 5752325)
 
@@ -81,4 +81,9 @@ class Voronoi_Plotter(VoronoiAnalyser):
         plt.legend()
         plt.xlabel("Distance")
         plt.ylabel("Number of neighbours in voronoi")
+        plt.show()
+
+    def order_hist(self, order):
+        plt.hist(order, bins = 20,  edgecolor='black', label=f'Mean {np.mean(order):.2f}, std {np.std(order):.2f}')
+        plt.title("Orientational order")
         plt.show()

@@ -56,8 +56,41 @@ class VoronoiAnalyser:
                 checked_pairs.add((point1_index, point2_index))
 
         distances = np.array(distances)
-
         return distances
+
+
+    def calculate_orientational_order(self):
+
+        psi = np.zeros(len(self.points), dtype=complex)
+        
+        for j, region_idx in enumerate(self.point_to_region):  
+            region = self.regions[region_idx]
+            if -1 in region or len(region) == 0:
+                continue 
+
+            # Find neighboring points from Voronoi ridges
+            neighbors = set()
+            for (p1, p2) in self.ridge_points:
+                if p1 == j:
+                    neighbors.add(p2)
+                elif p2 == j:
+                    neighbors.add(p1)
+
+            if not neighbors:
+                continue  # Skip if no neighbors
+
+            N_j = len(neighbors)  # Number of neighbors
+            sum_theta = 0  # Sum of angles for complex exponential
+            
+            for k in neighbors:
+                dx, dy = self.points[k] - self.points[j]
+                theta_jk = np.arctan2(dy, dx)  # arctan2 gives the correct angle in all four quadrants
+                sum_theta += np.exp(1j * 6 * theta_jk)  # Apply 6-fold symmetry
+            
+            psi[j] = sum_theta / N_j 
+
+        return np.abs(psi)
+
 
 
 
