@@ -2,11 +2,12 @@ from voronoi_analysis import VoronoiAnalyser
 from scipy.spatial import Voronoi,  voronoi_plot_2d
 import numpy as np
 import matplotlib.pyplot as plt
+from voronoi import BaseVoronoi
 
 class Voronoi_Plotter(VoronoiAnalyser):
     def __init__(self, df):
         super().__init__(df)
-        print("Voronoi plotter initialized")
+        #self.voronoi_points = df["Point of Voronoi"]
 
     def all_voronoi_diagram(self):
         fig, ax = plt.subplots(figsize=(8, 6))
@@ -29,11 +30,10 @@ class Voronoi_Plotter(VoronoiAnalyser):
         plt.show()
 
     def all_voronoi_diagram_area_filtered(self, area_limit):
-        areas=self.calculate_areas()
         fig, ax = plt.subplots(figsize=(8, 6))
         voronoi_plot_2d(self.voronoi, ax=ax, show_vertices=False, line_width=2, line_colors='blue')
         for i, point in enumerate(self.points):
-            color = 'blue' if self.good_point.iloc[i] else 'red'  # Assuming True/False values in 'Point of Voronoi'
+            color = 'blue' if self.voronoi_points.iloc[i] else 'red'  # Assuming True/False values in 'Point of Voronoi'
             ax.scatter(point[0], point[1], s=20, color=color, zorder=5)
 
         ax.set_title("Voronoi Diagram", fontsize=16)
@@ -44,9 +44,9 @@ class Voronoi_Plotter(VoronoiAnalyser):
         #ax.set_xlim(531925, 531975)
         #ax.set_ylim(5752275, 5752325)
 
-        for j, area in enumerate(areas):
+        for j, area in enumerate(self.areas):
             if not area>area_limit:
-                polygon = [self.vertices[i] for i in self.regions[j]]
+                polygon = [self.vertices[i] for i in self.regions[int(self.regions_indices[j])]]
                 plt.fill(*zip(*polygon))
 
         plt.show()
