@@ -1,4 +1,4 @@
-# solution_pipes_patterns.
+# solution_pipes_patterns
 The **BaseVoronoi** class is defined in the _voronoi.py_ file. It is designed to generate a Voronoi diagram based on a set of points provided in a pandas DataFrame. It stores key attributes of the Voronoi diagram, including self.vertices, self.regions, and self.point_to_region. 
 
 To obtain analysis results, follow these steps: 
