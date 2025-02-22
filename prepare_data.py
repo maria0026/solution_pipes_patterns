@@ -42,6 +42,28 @@ def read_data(path, preprocessed=False):
 
     return df
 
+#function for preparing random data
+def prepare_mock_data():
+    x_min = 531840.694
+    x_max = 532015.134
+    y_min = 5752195.773
+    y_max = 5752549.147
+
+    pipe_radius = np.ones(5356).reshape(-1, 1)
+    x_random_points = np.random.uniform(x_min, x_max, size = 5356).reshape(-1, 1)
+    y_random_points = np.random.uniform(y_min, y_max, size = 5356).reshape(-1, 1)
+    
+    points = np.hstack((pipe_radius, x_random_points, y_random_points))
+    print(np.shape(points))
+    np.savetxt("points_random.dat", points, fmt="%.3f")
+    
+    df = read_data("points_random.dat")
+    voronoi_preprocessor = VoronoiPreprocess(df)
+    areas=voronoi_preprocessor.calculate_areas()
+    updated_data = voronoi_preprocessor.mark_points_without_regions()
+    updated_data = voronoi_preprocessor.mark_points_with_big_area(areas, area_limit = 14)
+    np.savetxt("new_points_random.dat", updated_data, fmt="%.3f")
+
 
 class VoronoiPreprocess(BaseVoronoi):
     def __init__(self, df):
