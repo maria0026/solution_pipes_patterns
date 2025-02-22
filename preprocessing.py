@@ -5,6 +5,7 @@ import numpy as np
 
 
 def main(args):
+    #preprocessing of our data
     df = prepare_data.read_data(args.data_path)
     voronoi_preprocessor = prepare_data.VoronoiPreprocess(df)
     areas=voronoi_preprocessor.calculate_areas()
@@ -12,6 +13,9 @@ def main(args):
     updated_data = voronoi_preprocessor.mark_points_with_big_area(areas, args.area_limit)
     print(updated_data)
     np.savetxt("new_points.dat", updated_data, fmt="%.3f")
+
+    #generating random data
+    prepare_data.prepare_mock_data()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("parser for solution pipes pattern analysis")
