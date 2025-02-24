@@ -3,6 +3,7 @@ from scipy.spatial import Voronoi,  voronoi_plot_2d
 import numpy as np
 import matplotlib.pyplot as plt
 from voronoi import BaseVoronoi
+import matplotlib.cm as cm
 
 class Voronoi_Plotter(VoronoiAnalyser):
     def __init__(self, df):
@@ -25,8 +26,7 @@ class Voronoi_Plotter(VoronoiAnalyser):
         ax.grid(True)
         #ax.legend()
         #Zooming in:
-        #ax.set_xlim(531925, 531975)
-        #ax.set_ylim(5752275, 5752325)
+
         plt.show()
 
     def all_voronoi_diagram_area_filtered(self, area_limit):
@@ -34,7 +34,7 @@ class Voronoi_Plotter(VoronoiAnalyser):
         voronoi_plot_2d(self.voronoi, ax=ax, show_vertices=False, line_width=2, line_colors='blue')
         for i, point in enumerate(self.points):
             color = 'blue' if self.voronoi_points.iloc[i] else 'red'  # Assuming True/False values in 'Point of Voronoi'
-            ax.scatter(point[0], point[1], s=20, color=color, zorder=5)
+            ax.scatter(point[0], point[1], s=3, color=color, zorder=5)
 
         ax.set_title("Voronoi Diagram", fontsize=16)
         ax.set_xlabel("X Coordinate", fontsize=14)
@@ -43,6 +43,8 @@ class Voronoi_Plotter(VoronoiAnalyser):
         #ax.legend()
         #ax.set_xlim(531925, 531975)
         #ax.set_ylim(5752275, 5752325)
+        ax.set_xlim(531900, 531960)
+        ax.set_ylim(5752350, 5752450)
 
         for j, area in enumerate(self.areas):
             if not area>area_limit:
@@ -90,3 +92,30 @@ class Voronoi_Plotter(VoronoiAnalyser):
         plt.xlabel("Order parameter")
         plt.ylabel("Number of points")
         plt.show()
+
+
+    def hexatic_order(self, hexatic_order):
+        fig, ax = plt.subplots(figsize=(8, 6))
+        voronoi_plot_2d(self.voronoi, ax=ax, show_points=False, show_vertices=False, line_width=0.5, line_colors='blue')
+        for j, region_idx in enumerate(self.regions_indices): 
+            if self.voronoi_points[j] == 1: 
+                polygon = [self.vertices[i] for i in self.regions[int(self.regions_indices[j])]]
+                color = cm.viridis(hexatic_order[j])  # Assign color based on hexatic order
+                plt.fill(*zip(*polygon), color=color, alpha=0.7, edgecolor="black")  # Adjust transparency if needed
+
+        sm = cm.ScalarMappable(cmap=cm.plasma)
+        sm.set_array(hexatic_order)
+        plt.colorbar(sm, ax=ax, label="Hexatic Order") 
+        #plt.colorbar(cm.ScalarMappable(cmap=cm.viridis), label="Hexatic Order")  # Add color legend
+
+        ax.set_title("Voronoi Diagram", fontsize=16)
+        ax.set_xlabel("X Coordinate", fontsize=14)
+        ax.set_ylabel("Y Coordinate", fontsize=14)
+        ax.grid(True)
+        #ax.legend()
+        #Zooming in:
+        ax.set_xlim(531870, 531990)
+        ax.set_ylim(5752300, 5752500)
+
+        plt.show()
+
