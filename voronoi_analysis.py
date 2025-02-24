@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial import Voronoi,  voronoi_plot_2d
 from voronoi import BaseVoronoi
+import pandas as pd
+from scipy.spatial import distance_matrix
 
 class VoronoiAnalyser(BaseVoronoi):
     def __init__(self, df):
@@ -62,11 +64,43 @@ class VoronoiAnalyser(BaseVoronoi):
                     sum_theta += np.exp(1j * 6 * theta_jk)  # Apply 6-fold symmetry
                 
                 psi[j] = sum_theta / N_j 
-        self.df['Hexatic order']=np.abs(psi)
+        self.df['Hexatic order']=np.real(psi)
+        #self.df['Hexatic order']=np.abs(psi)
 
         return self.df
 
 
+    def calculate_ripleys_k(self, r_vals, area):
+        """
+        Compute Ripley's K function for the Voronoi points.
 
+        Parameters:
+            r_vals (array-like): List of distances at which to compute K(r).
+
+        Returns:
+            DataFrame with 'r' values and 'K(r)' values.
+        """
+        distances=self.calculate_distance_between_neighbours()
+        print(np.shape(distances))
+        valid_points = self.df[self.df['Point of Voronoi'] == 1][["Center x coordinate", "Center y coordinate"]].values
+        n = len(valid_points)  # Number of valid Voronoi points
+        if n < 2:
+            print("Not enough points for Ripley's K function.")
+            return None
+        
+        lambda_hat = n / area  # Point intensity (density)
+        dist_matrix = distance_matrix(valid_points, valid_points)  # Compute distances
+        print(np.shape(dist_matrix))
+        k_values = []
+        for r in r_vals:
+            count = np.sum((dist_matrix > 0) & (dist_matrix <= r))  # Exclude self-distances
+            K_r = (area / (n * (n - 1))) * count  # Normalize
+            k_values.append(K_r)
+
+        # Store results
+        ripley_df = pd.DataFrame({'r': r_vals, 'K(r)': k_values})
+        self.df['Ripley K'] = np.interp(self.df['Area'], r_vals, k_values)  # Interpolate K values into df
+
+        return ripley_df
 
 
