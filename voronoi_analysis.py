@@ -38,7 +38,7 @@ class VoronoiAnalyser(BaseVoronoi):
         return distances
 
 
-    def calculate_orientational_order(self):
+    def calculate_orientational_order(self, absolute = False):
         psi = np.zeros(len(self.points), dtype=complex)
         for j, region_idx in enumerate(self.regions_indices): 
             if self.voronoi_points[j] == 1: 
@@ -64,8 +64,10 @@ class VoronoiAnalyser(BaseVoronoi):
                     sum_theta += np.exp(1j * 6 * theta_jk)  # Apply 6-fold symmetry
                 
                 psi[j] = sum_theta / N_j 
-        self.df['Hexatic order']=np.real(psi)
-        #self.df['Hexatic order']=np.abs(psi)
+        if absolute:
+            self.df['Hexatic order']=np.abs(psi)
+        else:
+            self.df['Hexatic order']=np.real(psi)
 
         return self.df
 
