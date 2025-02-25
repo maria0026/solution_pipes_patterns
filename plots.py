@@ -98,7 +98,7 @@ class Voronoi_Plotter(VoronoiAnalyser):
         fig, ax = plt.subplots(figsize=(8, 6))
         voronoi_plot_2d(self.voronoi, ax=ax, show_points=False, show_vertices=False, line_width=0.5, line_colors='blue')
         for j, region_idx in enumerate(self.regions_indices): 
-            if self.voronoi_points[j] == 1: 
+            if self.voronoi_points[j] == 1 and -1 not in self.regions[int(region_idx)]: 
                 polygon = [self.vertices[i] for i in self.regions[int(self.regions_indices[j])]]
                 color = cm.viridis(hexatic_order[j])  # Assign color based on hexatic order
                 plt.fill(*zip(*polygon), color=color, alpha=0.7, edgecolor="black")  # Adjust transparency if needed
