@@ -43,8 +43,9 @@ class Voronoi_Plotter(VoronoiAnalyser):
         #ax.legend()
         #ax.set_xlim(531925, 531975)
         #ax.set_ylim(5752275, 5752325)
-        ax.set_xlim(531900, 531960)
-        ax.set_ylim(5752350, 5752450)
+
+        ax.set_xlim(0,25)
+        ax.set_ylim(-50,-100)
 
         for j, area in enumerate(self.areas):
             if not area>area_limit:
@@ -103,7 +104,7 @@ class Voronoi_Plotter(VoronoiAnalyser):
                 color = cm.viridis(hexatic_order[j])  # Assign color based on hexatic order
                 plt.fill(*zip(*polygon), color=color, alpha=0.7, edgecolor="black")  # Adjust transparency if needed
 
-        sm = cm.ScalarMappable(cmap=cm.plasma)
+        sm = cm.ScalarMappable(cmap=cm.viridis)
         sm.set_array(hexatic_order)
         plt.colorbar(sm, ax=ax, label="Hexatic Order") 
         #plt.colorbar(cm.ScalarMappable(cmap=cm.viridis), label="Hexatic Order")  # Add color legend
@@ -114,8 +115,10 @@ class Voronoi_Plotter(VoronoiAnalyser):
         ax.grid(True)
         #ax.legend()
         #Zooming in:
-        ax.set_xlim(531870, 531990)
-        ax.set_ylim(5752300, 5752500)
+        #ax.set_xlim(531870, 531990)
+        #ax.set_ylim(5752300, 5752500)
+        ax.set_xlim(0,25)
+        ax.set_ylim(-50,-100)
 
         plt.show()
 
