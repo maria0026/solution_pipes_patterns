@@ -35,6 +35,15 @@ def read_data(path, preprocessed=False):
     df["Center x coordinate"] = pd.to_numeric(df["Center x coordinate"], errors="coerce")
     df["Center y coordinate"] = pd.to_numeric(df["Center y coordinate"], errors="coerce")
 
+
+
+    if not preprocessed:
+        x_center_mass= df["Center x coordinate"].mean()
+        y_center_mass= df["Center y coordinate"].mean()
+        df["Center x coordinate"] = df["Center x coordinate"] - x_center_mass
+        df["Center y coordinate"] = df["Center y coordinate"] - y_center_mass
+
+
     if preprocessed:
         df["Point of Voronoi"] = pd.to_numeric(df["Point of Voronoi"], errors="coerce")
         df["Area"] = pd.to_numeric(df["Area"], errors="coerce")
@@ -49,6 +58,11 @@ def prepare_mock_data(x_min, x_max, y_min, y_max, num_poins):
     x_random_points = np.random.uniform(x_min, x_max, size = num_poins).reshape(-1, 1)
     y_random_points = np.random.uniform(y_min, y_max, size = num_poins).reshape(-1, 1)
     
+    x_center_mass  = np.mean(x_random_points)
+    y_center_mass  = np.mean(y_random_points)
+    x_random_points = x_random_points - x_center_mass
+    y_random_points = y_random_points - y_center_mass
+
     points = np.hstack((pipe_radius, x_random_points, y_random_points))
     random_df = pd.DataFrame(points, columns=["Pipe radius", "Center x coordinate", "Center y coordinate"])
 

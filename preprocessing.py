@@ -6,7 +6,7 @@ import numpy as np
 
 def main(args):
     #preprocessing of our data
-    df = prepare_data.read_data(args.data_path)
+    df = prepare_data.read_data(args.data_path, preprocessed=False)
     voronoi_preprocessor = prepare_data.VoronoiPreprocess(df)
     areas=voronoi_preprocessor.calculate_areas()
     updated_data = voronoi_preprocessor.mark_points_without_regions()
