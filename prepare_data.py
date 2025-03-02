@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from voronoi import BaseVoronoi
 
-def read_data(path, preprocessed=False):
+def read_data(path, preprocessed=False, add_geometric_center = False):
     """
     Reads data from a file and converts it to a pandas DataFrame.
 
@@ -37,11 +37,11 @@ def read_data(path, preprocessed=False):
 
 
 
-    if not preprocessed:
-        x_center_mass= df["Center x coordinate"].mean()
-        y_center_mass= df["Center y coordinate"].mean()
-        df["Center x coordinate"] = df["Center x coordinate"] - x_center_mass
-        df["Center y coordinate"] = df["Center y coordinate"] - y_center_mass
+    if add_geometric_center:
+        x_center= df["Center x coordinate"].mean()
+        y_center= df["Center y coordinate"].mean()
+        df["Center x coordinate"] = df["Center x coordinate"] - x_center
+        df["Center y coordinate"] = df["Center y coordinate"] - y_center
 
 
     if preprocessed:
@@ -58,10 +58,10 @@ def prepare_mock_data(x_min, x_max, y_min, y_max, num_poins):
     x_random_points = np.random.uniform(x_min, x_max, size = num_poins).reshape(-1, 1)
     y_random_points = np.random.uniform(y_min, y_max, size = num_poins).reshape(-1, 1)
     
-    x_center_mass  = np.mean(x_random_points)
-    y_center_mass  = np.mean(y_random_points)
-    x_random_points = x_random_points - x_center_mass
-    y_random_points = y_random_points - y_center_mass
+    x_center = np.mean(x_random_points)
+    y_center = np.mean(y_random_points)
+    x_random_points = x_random_points - x_center
+    y_random_points = y_random_points - y_center
 
     points = np.hstack((pipe_radius, x_random_points, y_random_points))
     random_df = pd.DataFrame(points, columns=["Pipe radius", "Center x coordinate", "Center y coordinate"])
