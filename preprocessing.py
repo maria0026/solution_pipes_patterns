@@ -2,6 +2,7 @@ import argparse
 import prepare_data
 import pandas as pd 
 import numpy as np
+import os
 
 
 def main(args):
@@ -17,11 +18,13 @@ def main(args):
     updated_data = voronoi_preprocessor.mark_points_with_big_area(areas, args.area_limit)
     print(updated_data)
     
-    if args.data_path.startswith("_"): 
-        np.savetxt("new" + args.data_path, updated_data, fmt="%.3f")
-    else:
-        np.savetxt("new_" + args.data_path, updated_data, fmt="%.3f")
+    file=args.data_path.split('/')
+    folder_name = file[0]
+    filename=file[1]
+    if not os.path.exists(f'new_{folder_name}'):
+        os.mkdir(f'new_{folder_name}')
 
+    np.savetxt("new_" + args.data_path, updated_data, fmt="%.3f")
 
     #generating and preprocessing random data
     x_min, x_max = df["Center x coordinate"].min(), df["Center x coordinate"].max()
@@ -33,15 +36,15 @@ def main(args):
     updated_data = voronoi_preprocessor.mark_points_without_regions()
     updated_data = voronoi_preprocessor.mark_points_with_big_area(areas, area_limit = args.area_limit)
 
-    if args.data_path.startswith("_"):
-        np.savetxt("random" + args.data_path, updated_data, fmt="%.3f")
+    if filename.startswith("_"):
+        np.savetxt(f"new_{folder_name}/random{filename}", updated_data, fmt="%.3f")
     else:
-        np.savetxt("random_" + args.data_path, updated_data, fmt="%.3f")
+        np.savetxt(f"new_{folder_name}/random_{filename}", updated_data, fmt="%.3f")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("parser for solution pipes pattern analysis")
-    parser.add_argument("--data_path", nargs="?", default= "_SICILY.dat", help="path of data", type=str)
+    parser.add_argument("--data_path", nargs="?", default= "data/_SICILY.dat", help="path of data", type=str)
     parser.add_argument("--area_limit", nargs="?", default=14.0, help="limit of area", type=float)
 
     args = parser.parse_args()

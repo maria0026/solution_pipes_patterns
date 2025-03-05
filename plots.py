@@ -44,8 +44,8 @@ class Voronoi_Plotter(VoronoiAnalyser):
         #ax.set_xlim(531925, 531975)
         #ax.set_ylim(5752275, 5752325)
 
-        ax.set_xlim(0,25)
-        ax.set_ylim(-50,-100)
+        ax.set_xlim(-80,-60)
+        ax.set_ylim(-80,-50)
 
         for j, area in enumerate(self.areas):
             if not area>area_limit:
@@ -117,8 +117,9 @@ class Voronoi_Plotter(VoronoiAnalyser):
         #Zooming in:
         #ax.set_xlim(531870, 531990)
         #ax.set_ylim(5752300, 5752500)
-        ax.set_xlim(0,25)
-        ax.set_ylim(-50,-100)
+
+        ax.set_xlim(-80,-60)
+        ax.set_ylim(-80,-50)
 
         plt.show()
 
