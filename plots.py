@@ -29,7 +29,7 @@ class Voronoi_Plotter(VoronoiAnalyser):
 
         plt.show()
 
-    def all_voronoi_diagram_area_filtered(self, area_limit):
+    def all_voronoi_diagram_area_filtered(self, x_lim_min=20, x_lim_max=60, y_lim_min=30, y_lim_max=50):
         fig, ax = plt.subplots(figsize=(8, 6))
         voronoi_plot_2d(self.voronoi, ax=ax, show_vertices=False, line_width=2, line_colors='blue')
 
@@ -41,15 +41,10 @@ class Voronoi_Plotter(VoronoiAnalyser):
         ax.set_xlabel("X Coordinate", fontsize=14)
         ax.set_ylabel("Y Coordinate", fontsize=14)
         ax.grid(True)
-        #ax.legend()
-        #ax.set_xlim(531925, 531975)
-        #ax.set_ylim(5752275, 5752325)
+        ax.set_xlim(x_lim_min, x_lim_max)
+        ax.set_ylim(y_lim_min, y_lim_max)
 
-        #ax.set_xlim(-80,-60)
-        #ax.set_ylim(-80,-50)
-
-        for j, point in enumerate(self.point_to_region):
-            region_index = self.point_to_region[j]
+        for j, region_index in enumerate(self.point_to_region):
             if (self.voronoi_points.iloc[j]) and (-1 not in self.regions[int(region_index)]):
                 polygon = [self.vertices[i] for i in self.regions[int(region_index)]]
                 plt.fill(*zip(*polygon))
@@ -101,9 +96,10 @@ class Voronoi_Plotter(VoronoiAnalyser):
     def hexatic_order(self, hexatic_order):
         fig, ax = plt.subplots(figsize=(8, 6))
         voronoi_plot_2d(self.voronoi, ax=ax, show_points=False, show_vertices=False, line_width=0.5, line_colors='blue')
-        for j, region_idx in enumerate(self.regions_indices): 
-            if self.voronoi_points[j] == 1 and -1 not in self.regions[int(region_idx)]: 
-                polygon = [self.vertices[i] for i in self.regions[int(self.regions_indices[j])]]
+
+        for j, region_index in enumerate(self.point_to_region):
+            if (self.voronoi_points.iloc[j]) and (-1 not in self.regions[int(region_index)]):
+                polygon = [self.vertices[i] for i in self.regions[int(region_index)]]
                 color = cm.viridis(hexatic_order[j])  # Assign color based on hexatic order
                 plt.fill(*zip(*polygon), color=color, alpha=0.7, edgecolor="black")  # Adjust transparency if needed
 
