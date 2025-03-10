@@ -32,6 +32,7 @@ class Voronoi_Plotter(VoronoiAnalyser):
     def all_voronoi_diagram_area_filtered(self, area_limit):
         fig, ax = plt.subplots(figsize=(8, 6))
         voronoi_plot_2d(self.voronoi, ax=ax, show_vertices=False, line_width=2, line_colors='blue')
+
         for i, point in enumerate(self.points):
             color = 'blue' if self.voronoi_points.iloc[i] else 'red'  # Assuming True/False values in 'Point of Voronoi'
             ax.scatter(point[0], point[1], s=3, color=color, zorder=5)
@@ -46,11 +47,13 @@ class Voronoi_Plotter(VoronoiAnalyser):
 
         #ax.set_xlim(-80,-60)
         #ax.set_ylim(-80,-50)
-        
-        for j, region_idx in enumerate(self.regions_indices):
-            if bool(self.voronoi_points.iloc[j]) and (-1 not in self.regions[int(region_idx)]):
-                polygon = [self.vertices[i] for i in self.regions[int(region_idx)]]
+
+        for j, point in enumerate(self.point_to_region):
+            region_index = self.point_to_region[j]
+            if (self.voronoi_points.iloc[j]) and (-1 not in self.regions[int(region_index)]):
+                polygon = [self.vertices[i] for i in self.regions[int(region_index)]]
                 plt.fill(*zip(*polygon))
+                
 
         plt.show()
 

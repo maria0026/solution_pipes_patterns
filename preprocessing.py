@@ -7,7 +7,7 @@ import os
 
 def main(args):
     #preprocessing of our data
-    if args.data_path == "pipes3.dat":
+    if args.data_path == "data/pipes3.dat":
         df = prepare_data.read_data(args.data_path, preprocessed=False, add_geometric_center = True)
     else:
         df = prepare_data.read_data(args.data_path, preprocessed=False, add_geometric_center = False)
@@ -44,7 +44,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("parser for solution pipes pattern analysis")
-    parser.add_argument("--data_path", nargs="?", default= "data/_SICILY.dat", help="path of data", type=str)
+    parser.add_argument("--data_path", nargs="?", default= "data/_DEVONSHIRE_BAY_WEST.dat", help="path of data", type=str)
     parser.add_argument("--area_limit", nargs="?", default=14.0, help="limit of area", type=float)
 
     args = parser.parse_args()
