@@ -11,11 +11,11 @@ class VoronoiAnalyser(BaseVoronoi):
         self.ridge_points = self.voronoi.ridge_points
         self.voronoi_points = df["Point of Voronoi"]
         self.areas=list(self.df['Area'])
-        self.regions_indices=list(self.df['Region index'])
+        #self.regions_indices=list(self.df['Region index'])
 
     def calculate_sides(self):
         sides=[]
-        for j, region_idx in enumerate(self.regions_indices):
+        for j, region_idx in enumerate(self.point_to_region):
             if self.voronoi_points[j]==1: #only if region is good voronoi cell
                 sides.append(len(self.regions[int(region_idx)]))
         return sides
@@ -40,7 +40,7 @@ class VoronoiAnalyser(BaseVoronoi):
 
     def calculate_orientational_order(self, absolute = False):
         psi = np.zeros(len(self.points), dtype=complex)
-        for j, region_idx in enumerate(self.regions_indices): 
+        for j, region_idx in enumerate(self.point_to_region): 
             if self.voronoi_points[j] == 1: 
                 region = self.regions[int(region_idx)]
 
