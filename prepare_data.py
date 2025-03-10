@@ -115,13 +115,12 @@ class VoronoiPreprocess(BaseVoronoi):
 
         df_copy = self.df.copy()
         for i, region_index in enumerate(self.point_to_region):
-            if region_index == -1 or region_index >= len(areas):
-                df_copy.loc[i, 'Point of Voronoi'] = 0
-                df_copy.loc[i, 'Area']= 1000
-                continue
+
             df_copy.loc[i, 'Area']= areas[region_index]
+            df_copy.loc[i, 'Region index']= region_index
+
             if areas[region_index] > area_limit:
                 df_copy.loc[i, 'Point of Voronoi'] = 0 
-            df_copy.loc[i, 'Region index']= region_index
+
         return df_copy
 

@@ -44,12 +44,12 @@ class Voronoi_Plotter(VoronoiAnalyser):
         #ax.set_xlim(531925, 531975)
         #ax.set_ylim(5752275, 5752325)
 
-        ax.set_xlim(-80,-60)
-        ax.set_ylim(-80,-50)
-
-        for j, area in enumerate(self.areas):
-            if not area>area_limit:
-                polygon = [self.vertices[i] for i in self.regions[int(self.regions_indices[j])]]
+        #ax.set_xlim(-80,-60)
+        #ax.set_ylim(-80,-50)
+        
+        for j, region_idx in enumerate(self.regions_indices):
+            if bool(self.voronoi_points.iloc[j]) and (-1 not in self.regions[int(region_idx)]):
+                polygon = [self.vertices[i] for i in self.regions[int(region_idx)]]
                 plt.fill(*zip(*polygon))
 
         plt.show()
@@ -118,8 +118,8 @@ class Voronoi_Plotter(VoronoiAnalyser):
         #ax.set_xlim(531870, 531990)
         #ax.set_ylim(5752300, 5752500)
 
-        ax.set_xlim(-80,-60)
-        ax.set_ylim(-80,-50)
+        #ax.set_xlim(-80,-60)
+        #ax.set_ylim(-80,-50)
 
         plt.show()
 
