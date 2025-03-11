@@ -111,6 +111,10 @@ class VoronoiPreprocess(BaseVoronoi):
        
         return self.df
     
+    def calculate_area_limit(self, areas, per=95):
+
+        return np.percentile(areas, per)
+
     def mark_points_with_big_area(self, areas, area_limit):
 
         df_copy = self.df.copy()

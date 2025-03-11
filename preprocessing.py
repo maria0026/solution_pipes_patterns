@@ -15,7 +15,9 @@ def main(args):
     voronoi_preprocessor = prepare_data.VoronoiPreprocess(df)
     areas=voronoi_preprocessor.calculate_areas()
     updated_data = voronoi_preprocessor.mark_points_without_regions()
-    updated_data = voronoi_preprocessor.mark_points_with_big_area(areas, args.area_limit)
+    area_limit= voronoi_preprocessor.calculate_area_limit(areas, per=95)
+    print(area_limit)
+    updated_data = voronoi_preprocessor.mark_points_with_big_area(areas, area_limit)
     print(updated_data)
     
     file=args.data_path.split('/')
@@ -34,7 +36,7 @@ def main(args):
     voronoi_preprocessor = prepare_data.VoronoiPreprocess(random_df)
     areas=voronoi_preprocessor.calculate_areas()
     updated_data = voronoi_preprocessor.mark_points_without_regions()
-    updated_data = voronoi_preprocessor.mark_points_with_big_area(areas, area_limit = args.area_limit)
+    updated_data = voronoi_preprocessor.mark_points_with_big_area(areas, area_limit = area_limit)
 
     if filename.startswith("_"):
         np.savetxt(f"new_{folder_name}/random{filename}", updated_data, fmt="%.3f")
