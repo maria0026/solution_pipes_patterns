@@ -16,7 +16,7 @@ class VoronoiAnalyser(BaseVoronoi):
     def calculate_sides(self):
         sides=[]
         for j, region_idx in enumerate(self.point_to_region):
-            if self.voronoi_points[j]==1: #only if region is good voronoi cell
+            if self.voronoi_points[j]==1 and (-1 not in self.regions[int(region_idx)]): #only if region is good voronoi cell
                 sides.append(len(self.regions[int(region_idx)]))
         return sides
 
@@ -27,7 +27,7 @@ class VoronoiAnalyser(BaseVoronoi):
             point1_index, point2_index = ridge  
             if (point1_index, point2_index) in checked_pairs or (point2_index, point1_index) in checked_pairs:
                 continue 
-            if (self.voronoi_points[point1_index]==1 and self.voronoi_points[point2_index]==1):
+            if (self.voronoi_points[point1_index]==1 and self.voronoi_points[point2_index]==1) and (-1 not in self.regions[int(point1_index)]) and (-1 not in self.regions[int(point2_index)]):
                 point1 = self.points[point1_index]
                 point2 = self.points[point2_index]
                 distance = np.linalg.norm(point1 - point2)
@@ -41,8 +41,7 @@ class VoronoiAnalyser(BaseVoronoi):
     def calculate_orientational_order(self, absolute = False):
         psi = np.zeros(len(self.points), dtype=complex)
         for j, region_idx in enumerate(self.point_to_region): 
-            if self.voronoi_points[j] == 1: 
-                region = self.regions[int(region_idx)]
+            if self.voronoi_points[j] == 1 and (-1 not in self.regions[int(region_idx)]): 
 
                 # Find neighboring points from Voronoi ridges
                 neighbors = set()
