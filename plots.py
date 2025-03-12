@@ -93,7 +93,7 @@ class Voronoi_Plotter(VoronoiAnalyser):
         plt.show()
 
 
-    def hexatic_order(self, hexatic_order):
+    def hexatic_order(self, hexatic_order, x_lim_min=20, x_lim_max=60, y_lim_min=30, y_lim_max=50):
         fig, ax = plt.subplots(figsize=(8, 6))
         voronoi_plot_2d(self.voronoi, ax=ax, show_points=False, show_vertices=False, line_width=0.5, line_colors='blue')
 
@@ -112,13 +112,8 @@ class Voronoi_Plotter(VoronoiAnalyser):
         ax.set_xlabel("X Coordinate", fontsize=14)
         ax.set_ylabel("Y Coordinate", fontsize=14)
         ax.grid(True)
-        #ax.legend()
-        #Zooming in:
-        #ax.set_xlim(531870, 531990)
-        #ax.set_ylim(5752300, 5752500)
-
-        #ax.set_xlim(-80,-60)
-        #ax.set_ylim(-80,-50)
+        ax.set_xlim(x_lim_min, x_lim_max)
+        ax.set_ylim(y_lim_min, y_lim_max)
 
         plt.show()
 
