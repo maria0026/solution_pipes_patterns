@@ -42,7 +42,6 @@ class VoronoiAnalyser(BaseVoronoi):
         psi = np.zeros(len(self.points), dtype=complex)
         for j, region_idx in enumerate(self.point_to_region): 
             if self.voronoi_points[j] == 1 and (-1 not in self.regions[int(region_idx)]): 
-
                 # Find neighboring points from Voronoi ridges
                 neighbors = set()
                 for (p1, p2) in self.ridge_points:
@@ -53,7 +52,6 @@ class VoronoiAnalyser(BaseVoronoi):
 
                 if not neighbors:
                     continue  # Skip if no neighbors
-
                 N_j = len(neighbors)  # Number of neighbors
                 sum_theta = 0  # Sum of angles for complex exponential
                 
@@ -63,13 +61,14 @@ class VoronoiAnalyser(BaseVoronoi):
                     sum_theta += np.exp(1j * 6 * theta_jk)  # Apply 6-fold symmetry
                 
                 psi[j] = sum_theta / N_j 
-        if absolute:
-            self.df['Hexatic order']=np.abs(psi)
-        else:
-            self.df['Hexatic order']=np.real(psi)
+                print(psi[j])
+                if absolute:
+                    self.df['Hexatic order']=np.abs(psi)
+                else:
+                    self.df['Hexatic order']=np.sqrt(np.real(psi)**2 + np.imag(psi)**2)
 
         return self.df
-
+    
 
     def calculate_ripleys_k(self, r_vals, area):
         """

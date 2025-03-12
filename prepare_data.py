@@ -68,6 +68,17 @@ def prepare_mock_data(x_min, x_max, y_min, y_max, num_poins):
 
     return random_df
 
+def generate_hexagonal_grid(rows, cols, spacing=1.0):
+        points = []
+        for row in range(rows):
+            for col in range(cols):
+                x = col * spacing * np.sqrt(3)/2  # Horizontal spacing
+                y = row * spacing   # Vertical spacing
+                if col % 2 == 1:  # Offset every other column
+                    y += spacing * 0.5
+                points.append((1, x, y))  # First column filled with ones
+        return np.array(points)
+
 
 class VoronoiPreprocess(BaseVoronoi):
     def __init__(self, df):
@@ -127,4 +138,5 @@ class VoronoiPreprocess(BaseVoronoi):
                 df_copy.loc[i, 'Point of Voronoi'] = 0 
 
         return df_copy
+
 
