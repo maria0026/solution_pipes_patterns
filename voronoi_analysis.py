@@ -4,6 +4,7 @@ from scipy.spatial import Voronoi,  voronoi_plot_2d
 from voronoi import BaseVoronoi
 import pandas as pd
 from scipy.spatial import distance_matrix
+import math
 
 class VoronoiAnalyser(BaseVoronoi):
     def __init__(self, df):
@@ -61,7 +62,6 @@ class VoronoiAnalyser(BaseVoronoi):
                     sum_theta += np.exp(1j * 6 * theta_jk)  # Apply 6-fold symmetry
                 
                 psi[j] = sum_theta / N_j 
-                print(psi[j])
                 if absolute:
                     self.df['Hexatic order']=np.abs(psi)
                 else:
@@ -103,4 +103,46 @@ class VoronoiAnalyser(BaseVoronoi):
 
         return ripley_df
 
+    def find_points(self, x_min, y_min, x_max, y_max):
+        N=0
+        for point in self.points:
+            if point[0]< x_max and point[0]> x_min and point[1]< y_max and point[1]> y_min:
+                N+=1
+        return N
 
+    def calculate_mean_density(self):
+        R = int(np.min(np.ptp(self.points, axis=0))/2)
+        max_area = np.pi*R**2
+        N=self.find_points(-R*2, -R*2,  R*2, R*2)
+        n=N/max_area
+        return n
+        
+    def radial_distribution(self, x0, y0, dr):
+
+        #R= int(np.min(np.ptp(self.points, axis=0))/2)
+        x_bounds = np.abs(self.points[0, :].min()), np.abs(self.points[0, :].max())
+        y_bounds = np.abs(self.points[1, :].min()), np.abs(self.points[1, :].max())
+        x_min = np.min(np.abs(x0) - np.array(x_bounds))
+        y_min = np.min(np.abs(y0) - np.array(y_bounds))
+        R = int(min(abs(x_min), abs(y_min)))
+        g= np.zeros(math.ceil(R/dr), dtype=float)
+        n=self.calculate_mean_density()
+
+        for i, _ in enumerate(np.arange(0, R, dr)):
+            r_i=(i+0.5)*dr
+            x_min_i = x0 + r_i-dr/2
+            x_max_i = x0 + r_i+dr/2
+            y_min_i = y0 + r_i-dr/2
+            y_max_i = y0 + r_i+dr/2
+            area=2*np.pi*r_i*dr
+            N_i=self.find_points(x_min_i, y_min_i, x_max_i, y_max_i)
+            #print(r_i, area)
+            g[i]=N_i/(area*n)
+        return g
+    
+    def mean_radial_distribution(self, dr):
+        mean=np.zeros(len(self.points), dtype=float)
+        for i, point in enumerate(self.points):
+            g=self.radial_distribution(point[0], point[1], dr)
+            mean[i]=np.mean(g)
+        return mean
