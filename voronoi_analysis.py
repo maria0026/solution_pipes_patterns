@@ -129,11 +129,11 @@ class VoronoiAnalyser(BaseVoronoi):
         #y_min = np.min(np.abs(y0) - np.array(y_bounds))
         
         #R = int(min(abs(x_min), abs(y_min)))
-        #g= np.zeros(math.ceil(R/dr), dtype=float)
-        g= np.zeros(dr, dtype=float)
+        g= np.zeros(math.ceil(R/dr), dtype=float)
+        #g= np.zeros(dr, dtype=float)
         n=self.calculate_mean_density()
 
-        for i, _ in enumerate(np.linspace(0, R, dr)):
+        for i, _ in enumerate(np.arange(0, R, dr)):
             g_r =np.zeros((len(self.points)))
             for j, point in enumerate(self.points):
                 r_i=(i+0.5)*dr
