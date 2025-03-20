@@ -103,46 +103,45 @@ class VoronoiAnalyser(BaseVoronoi):
 
         return ripley_df
 
-    def find_points(self, x_min, y_min, x_max, y_max):
+    def find_points(self, x_center, y_center, radius_min, radius_max):
         N=0
         for point in self.points:
-            if point[0]< x_max and point[0]> x_min and point[1]< y_max and point[1]> y_min:
-                N+=1
+            if point[0]!=x_center and point[1]!=y_center:
+                distance = math.sqrt((point[0] - x_center) ** 2 + (point[1] - y_center) ** 2)
+                if distance <= radius_max and distance>=radius_min:
+                    N += 1
         return N
 
     def calculate_mean_density(self):
-        R = int(np.min(np.ptp(self.points, axis=0))/2)
+        R = int(np.min(np.ptp(self.points, axis=0))/(2))
         max_area = np.pi*R**2
-        N=self.find_points(-R*2, -R*2,  R*2, R*2)
+        N=self.find_points(0, 0, 0, R)
+        print(N)
         n=N/max_area
         return n
         
-    def radial_distribution(self, x0, y0, dr):
+    def radial_distribution(self, dr):
 
-        #R= int(np.min(np.ptp(self.points, axis=0))/2)
-        x_bounds = np.abs(self.points[0, :].min()), np.abs(self.points[0, :].max())
-        y_bounds = np.abs(self.points[1, :].min()), np.abs(self.points[1, :].max())
-        x_min = np.min(np.abs(x0) - np.array(x_bounds))
-        y_min = np.min(np.abs(y0) - np.array(y_bounds))
-        R = int(min(abs(x_min), abs(y_min)))
-        g= np.zeros(math.ceil(R/dr), dtype=float)
+        R= int(np.min(np.ptp(self.points, axis=0))/(2))
+        #x_bounds = np.abs(self.points[0, :].min()), np.abs(self.points[0, :].max())
+        #y_bounds = np.abs(self.points[1, :].min()), np.abs(self.points[1, :].max())
+        #x_min = np.min(np.abs(x0) - np.array(x_bounds))
+        #y_min = np.min(np.abs(y0) - np.array(y_bounds))
+        
+        #R = int(min(abs(x_min), abs(y_min)))
+        #g= np.zeros(math.ceil(R/dr), dtype=float)
+        g= np.zeros(dr, dtype=float)
         n=self.calculate_mean_density()
 
-        for i, _ in enumerate(np.arange(0, R, dr)):
-            r_i=(i+0.5)*dr
-            x_min_i = x0 + r_i-dr/2
-            x_max_i = x0 + r_i+dr/2
-            y_min_i = y0 + r_i-dr/2
-            y_max_i = y0 + r_i+dr/2
-            area=2*np.pi*r_i*dr
-            N_i=self.find_points(x_min_i, y_min_i, x_max_i, y_max_i)
-            #print(r_i, area)
-            g[i]=N_i/(area*n)
+        for i, _ in enumerate(np.linspace(0, R, dr)):
+            g_r =np.zeros((len(self.points)))
+            for j, point in enumerate(self.points):
+                r_i=(i+0.5)*dr
+                radius_min = r_i-dr/2
+                radius_max = r_i+dr/2
+                area=2*np.pi*r_i*dr
+                N_i=self.find_points(point[0], point[1], radius_min, radius_max)
+                #print(r_i, area)
+                g_r[j]=N_i/(area*n)
+            g[i]= np.mean(g_r)#N_i/(area*n)
         return g
-    
-    def mean_radial_distribution(self, dr):
-        mean=np.zeros(len(self.points), dtype=float)
-        for i, point in enumerate(self.points):
-            g=self.radial_distribution(point[0], point[1], dr)
-            mean[i]=np.mean(g)
-        return mean

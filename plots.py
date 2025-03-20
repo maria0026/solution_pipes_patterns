@@ -100,11 +100,12 @@ class Voronoi_Plotter(VoronoiAnalyser):
         for j, region_index in enumerate(self.point_to_region):
             if (self.voronoi_points.iloc[j]) and (-1 not in self.regions[int(region_index)]):
                 polygon = [self.vertices[i] for i in self.regions[int(region_index)]]
+                print(hexatic_order[j])
                 color = cm.viridis(hexatic_order[j])  # Assign color based on hexatic order
                 plt.fill(*zip(*polygon), color=color, alpha=0.7, edgecolor="black")  # Adjust transparency if needed
 
         sm = cm.ScalarMappable(cmap=cm.viridis)
-        sm.set_array(hexatic_order)
+        sm.set_array(hexatic_order[hexatic_order<19])
         plt.colorbar(sm, ax=ax, label="Hexatic Order") 
         #plt.colorbar(cm.ScalarMappable(cmap=cm.viridis), label="Hexatic Order")  # Add color legend
 
