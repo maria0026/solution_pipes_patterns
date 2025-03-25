@@ -175,6 +175,6 @@ class VoronoiAnalyser(BaseVoronoi):
                 weight= area/intersection
                 #
                 #g_r[j]=N_i/(area*n)
-                g_r[j]= N[i]*weight/(area*n) ??
+                g_r[j]= N[i]*weight/(area*n) 
             g[i]= np.mean(g_r)#N_i/(area*n)
         return g
