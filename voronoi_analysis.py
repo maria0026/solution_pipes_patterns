@@ -162,9 +162,9 @@ class VoronoiAnalyser(BaseVoronoi):
     
     def radial_distribution(self, dr):
         hull_max=self.convex_hull_creation()
-        weights=[]
-        x=[]
-        y=[]
+        weights=np.zeros(len(self.points), dtype=int)
+        x=np.zeros(len(self.points), dtype=int)
+        y=np.zeros(len(self.points), dtype=int)
         weight=0
         #R= int(np.min(np.ptp(self.points, axis=0))/(2))
         x_bounds = (np.abs(self.points[0, :].max())-np.abs(self.points[0, :].min()))/2
@@ -192,7 +192,10 @@ class VoronoiAnalyser(BaseVoronoi):
                 weight= area/intersection
                 #g_r[j]=N_i/(area*n)
                 g_r[j]= N_i*weight/(area*n)
-                if np.abs(i-35)<=dr:
-                    weights.append(weight)
+                weight=math.floor(1000*weight)
+                if np.abs(i-7)<=dr:
+                    weights[j]=weight
+                    x[j]=point[0]
+                    y[j]=point[1]
             g[i]= np.mean(g_r)#N_i/(area*n)
-        return g, weights, self.points
+        return g, weights, x, y
