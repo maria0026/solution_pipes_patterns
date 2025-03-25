@@ -114,22 +114,29 @@ class VoronoiAnalyser(BaseVoronoi):
         return N
 
     def calculate_mean_density(self):
-        R = int(np.min(np.ptp(self.points, axis=0))/(2))
+        #R = int(np.min(np.ptp(self.points, axis=0))/(2))
+        '''
+        x_bounds = (np.abs(self.points[0, :].max())-np.abs(self.points[0, :].min()))/2
+        y_bounds = (np.abs(self.points[1, :].max())-np.abs(self.points[1, :].min()))/2
+        R=np.sqrt(x_bounds**2+y_bounds**2)
         max_area = np.pi*R**2
         N=self.find_points(0, 0, 0, R)
         print(N)
+        '''
+        N=len(self.points)
+        hull=self.convex_hull_creation()
+        max_area=self.hull_area(hull)
         n=N/max_area
         return n
         
     def intersection_area(self, circle_center, circle_radius, polygon_points):
         circle = Point(circle_center).buffer(circle_radius)
-        
         polygon = Polygon(polygon_points)
         intersection = circle.intersection(polygon)
         return intersection.area
-        
-    def convex_hull_creation(self, points):
-        points_sorted = sorted(points)
+    
+    def convex_hull_creation(self):
+        points_sorted = sorted(self.points, key=lambda x: x[0])
         def cross(o, a, b):
             return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
             
@@ -147,11 +154,17 @@ class VoronoiAnalyser(BaseVoronoi):
         convex_hull = lower[:-1] + upper[:-1]
         
         return convex_hull
+    
+    def hull_area(self, polygon_points):
+        polygon=Polygon(polygon_points)
+        return polygon.area
+    
     def radial_distribution(self, dr):
-
-        R= int(np.min(np.ptp(self.points, axis=0))/(2))
-        #x_bounds = np.abs(self.points[0, :].min()), np.abs(self.points[0, :].max())
-        #y_bounds = np.abs(self.points[1, :].min()), np.abs(self.points[1, :].max())
+        hull_max=self.convex_hull_creation()
+        #R= int(np.min(np.ptp(self.points, axis=0))/(2))
+        x_bounds = (np.abs(self.points[0, :].max())-np.abs(self.points[0, :].min()))/2
+        y_bounds = (np.abs(self.points[1, :].max())-np.abs(self.points[1, :].min()))/2
+        R=np.sqrt(x_bounds**2+y_bounds**2)
         #x_min = np.min(np.abs(x0) - np.array(x_bounds))
         #y_min = np.min(np.abs(y0) - np.array(y_bounds))
         
@@ -170,9 +183,8 @@ class VoronoiAnalyser(BaseVoronoi):
                 N_i=self.find_points(point[0], point[1], radius_min, radius_max)
                 #print(r_i, area)
                 # adding weights
-                intersection=self.intersection_area(point,radius_max, self.convex_hull_creation(self.points))-self.intersection_area(point,radius_min, self.convex_hull_creation(self.points))
+                intersection=self.intersection_area(point,radius_max, hull_max)-self.intersection_area(point,radius_min, hull_max)
                 weight= area/intersection
-                #
                 #g_r[j]=N_i/(area*n)
                 g_r[j]= N_i*weight/(area*n) 
             g[i]= np.mean(g_r)#N_i/(area*n)
