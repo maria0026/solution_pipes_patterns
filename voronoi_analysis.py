@@ -170,7 +170,7 @@ class VoronoiAnalyser(BaseVoronoi):
                 N_i=self.find_points(point[0], point[1], radius_min, radius_max)
                 #print(r_i, area)
                 # adding weights
-                 intersection=self.intersection_area(point,radius_max, self.convex_hull_creation(self.points))-self.intersection_area(point,radius_min, self.convex_hull_creation(self.points))
+                intersection=self.intersection_area(point,radius_max, self.convex_hull_creation(self.points))-self.intersection_area(point,radius_min, self.convex_hull_creation(self.points))
                 weight= area/intersection
                 #
                 #g_r[j]=N_i/(area*n)
