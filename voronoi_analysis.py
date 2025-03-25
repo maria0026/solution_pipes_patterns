@@ -121,14 +121,14 @@ class VoronoiAnalyser(BaseVoronoi):
         n=N/max_area
         return n
         
-    def intersection_area(circle_center, circle_radius, polygon_points):
+    def intersection_area(self, circle_center, circle_radius, polygon_points):
         circle = Point(circle_center).buffer(circle_radius)
         
         polygon = Polygon(polygon_points)
         intersection = circle.intersection(polygon)
         return intersection.area
         
-    def convex_hull_creation(points):
+    def convex_hull_creation(self, points):
         points_sorted = sorted(points)
         def cross(o, a, b):
             return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
@@ -174,7 +174,7 @@ class VoronoiAnalyser(BaseVoronoi):
                 intersection=intersection_area(point,radius_max)-intersection_area(point,radius_min)
                 weight= area/intersection
                 #
-                g_r[j]=N_i/(area*n)
-                # g_r[j]= N[i]*weight/(area*n) ??
+                #g_r[j]=N_i/(area*n)
+                g_r[j]= N[i]*weight/(area*n) ??
             g[i]= np.mean(g_r)#N_i/(area*n)
         return g
