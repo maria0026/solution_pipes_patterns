@@ -104,3 +104,41 @@ class VoronoiAnalyser(BaseVoronoi):
         return ripley_df
 
 
+    def find_neighbors(self, x_center, y_center, radius):
+        neighbors = set()
+        for point in self.points:
+            if (point[0]== x_center) and (point[1] ==y_center):
+                continue
+            new_radius = ((point[0] - x_center)**2 + (point[1] - y_center)**2)**0.5
+            if new_radius <= radius:
+                neighbors.add((point[0], point[1]))
+        return neighbors
+    
+
+    def calculate_orientational_order_circles(self, radius, absolute = False):
+        psi = np.zeros(len(self.points), dtype=complex)
+        for i, point in enumerate(self.points):
+            x_center, y_center = point
+            
+            #neighbors = set()
+            neighbors = self.find_neighbors(x_center, y_center, radius)
+
+            N_i = len(neighbors)  # Number of neighbors
+            sum_theta = 0  # Sum of angles for complex exponential
+            
+            if N_i == 0 or N_i ==1:
+                psi[i] = np.nan
+                continue
+            for k in neighbors:
+                dx, dy = k - self.points[i]
+                theta_jk = np.arctan2(dy, dx)  # arctan2 gives the correct angle in all four quadrants
+                sum_theta += np.exp(1j * 6 * theta_jk)  # Apply 6-fold symmetry
+            
+            psi[i] = sum_theta / N_i 
+            
+            if absolute:
+                self.df['Hexatic order']=np.abs(psi)
+            else:
+                self.df['Hexatic order']=np.sqrt(np.real(psi)**2 + np.imag(psi)**2)
+
+        return self.df

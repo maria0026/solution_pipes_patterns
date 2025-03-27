@@ -10,7 +10,7 @@ def main(args):
     if args.data_path == "data/pipes3.dat":
         df = prepare_data.read_data(args.data_path, preprocessed=False, add_geometric_center = True)
     else:
-        df = prepare_data.read_data(args.data_path, preprocessed=False, add_geometric_center = False)
+        df = prepare_data.read_data(args.data_path, preprocessed=False, add_geometric_center = True)
 
     voronoi_preprocessor = prepare_data.VoronoiPreprocess(df)
     areas=voronoi_preprocessor.calculate_areas()
@@ -46,7 +46,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("parser for solution pipes pattern analysis")
-    parser.add_argument("--data_path", nargs="?", default= "data/_DEVONSHIRE_BAY_WEST.dat", help="path of data", type=str)
+    parser.add_argument("--data_path", nargs="?", default= "data/area2.dat", help="path of data", type=str)
     parser.add_argument("--area_limit", nargs="?", default=14.0, help="limit of area", type=float)
 
     args = parser.parse_args()
