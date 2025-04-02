@@ -4,6 +4,9 @@ from scipy.spatial import Voronoi,  voronoi_plot_2d
 from voronoi import BaseVoronoi
 import pandas as pd
 from scipy.spatial import distance_matrix
+import math
+from typing import Tuple
+from shapely.geometry import Point, Polygon
 
 class VoronoiAnalyser(BaseVoronoi):
     def __init__(self, df):
@@ -70,23 +73,76 @@ class VoronoiAnalyser(BaseVoronoi):
         return self.df
     
 
+    def find_neighbors(self, x_center, y_center, radius):
+        neighbors = set()
+        for point in self.points:
+            if (point[0]== x_center) and (point[1] ==y_center):
+                continue
+            new_radius = ((point[0] - x_center)**2 + (point[1] - y_center)**2)**0.5
+            if new_radius <= radius:
+                neighbors.add((point[0], point[1]))
+        return neighbors
+    
+
+    def calculate_orientational_order_circles(self, radius, absolute = False):
+        psi = np.zeros(len(self.points), dtype=complex)
+        for i, point in enumerate(self.points):
+            x_center, y_center = point
+            
+            #neighbors = set()
+            neighbors = self.find_neighbors(x_center, y_center, radius)
+
+            N_i = len(neighbors)  # Number of neighbors
+            sum_theta = 0  # Sum of angles for complex exponential
+            
+            if N_i == 0 or N_i ==1:
+                psi[i] = np.nan
+                continue
+            for k in neighbors:
+                dx, dy = k - self.points[i]
+                theta_jk = np.arctan2(dy, dx)  # arctan2 gives the correct angle in all four quadrants
+                sum_theta += np.exp(1j * 6 * theta_jk)  # Apply 6-fold symmetry
+            
+            psi[i] = sum_theta / N_i 
+            
+            if absolute:
+                self.df['Hexatic order']=np.abs(psi)
+            else:
+                self.df['Hexatic order']=np.sqrt(np.real(psi)**2 + np.imag(psi)**2)
+
+        return self.df
+    
+
+    def ripley_K_function(self, r_values):
+        """
+        Oblicza funkcję K Ripleya dla zadanych promieni r.
+        
+        distances: macierz odległości między punktami (N x N)
+        r_values: tablica promieni, dla których liczymy K(r)
+        area: całkowita powierzchnia badanego obszaru
+        
+        Zwraca: tablicę wartości K(r)
+        """
+     
+        distances = self.calculate_distance_between_neighbours()
+        hull=self.convex_hull_creation()
+        max_area = self.hull_area(hull)
+        N = distances.shape[0]  # Liczba punktów
+        K_values = np.zeros_like(r_values, dtype=float)
+        L_values = np.zeros_like(r_values, dtype=float)
+
+        for i, r in enumerate(r_values):
+            #K_values[i] = (max_area) / (N** 2) * np.sum(distances <= r)
+            K_values[i] = (max_area) / (N*(N- 1)) * np.sum(distances <= r)
+            L_values[i] = math.sqrt(K_values[i] / np.pi) - r
+
+        return K_values, L_values
+
     def calculate_ripleys_k(self, r_vals, area):
-        """
-        Compute Ripley's K function for the Voronoi points.
 
-        Parameters:
-            r_vals (array-like): List of distances at which to compute K(r).
-
-        Returns:
-            DataFrame with 'r' values and 'K(r)' values.
-        """
-        distances=self.calculate_distance_between_neighbours()
-        print(np.shape(distances))
+        
         valid_points = self.df[self.df['Point of Voronoi'] == 1][["Center x coordinate", "Center y coordinate"]].values
-        n = len(valid_points)  # Number of valid Voronoi points
-        if n < 2:
-            print("Not enough points for Ripley's K function.")
-            return None
+        n = len(valid_points)  # Number of valid Voronoi point
         
         lambda_hat = n / area  # Point intensity (density)
         dist_matrix = distance_matrix(valid_points, valid_points)  # Compute distances
@@ -97,10 +153,105 @@ class VoronoiAnalyser(BaseVoronoi):
             K_r = (area / (n * (n - 1))) * count  # Normalize
             k_values.append(K_r)
 
+
         # Store results
         ripley_df = pd.DataFrame({'r': r_vals, 'K(r)': k_values})
         self.df['Ripley K'] = np.interp(self.df['Area'], r_vals, k_values)  # Interpolate K values into df
 
         return ripley_df
+    
 
+    def find_points(self, x_center, y_center, radius_min, radius_max):
+        N=0
+        for point in self.points:
+            if point[0]!=x_center and point[1]!=y_center:
+                distance = math.sqrt((point[0] - x_center) ** 2 + (point[1] - y_center) ** 2)
+                if distance <= radius_max and distance>=radius_min:
+                    N += 1
+        return N
 
+    def calculate_mean_density(self):
+        #R = int(np.min(np.ptp(self.points, axis=0))/(2))
+        '''
+        x_bounds = (np.abs(self.points[0, :].max())-np.abs(self.points[0, :].min()))/2
+        y_bounds = (np.abs(self.points[1, :].max())-np.abs(self.points[1, :].min()))/2
+        R=np.sqrt(x_bounds**2+y_bounds**2)
+        max_area = np.pi*R**2
+        N=self.find_points(0, 0, 0, R)
+        print(N)
+        '''
+        N=len(self.points)
+        hull=self.convex_hull_creation()
+        max_area=self.hull_area(hull)
+        n=N/max_area
+        return n
+        
+    def intersection_area(self, circle_center, circle_radius, polygon_points):
+        circle = Point(circle_center).buffer(circle_radius)
+        polygon = Polygon(polygon_points)
+        intersection = circle.intersection(polygon)
+        return intersection.area
+    
+    def convex_hull_creation(self):
+        points_sorted = sorted(self.points, key=lambda x: x[0])
+        def cross(o, a, b):
+            return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+            
+        lower = []
+        for p in points_sorted:
+            while len(lower) >= 2 and cross(lower[-2], lower[-1], p) <= 0:
+                lower.pop()
+            lower.append(p)
+        
+        upper = []
+        for p in reversed(points_sorted):
+            while len(upper) >= 2 and cross(upper[-2], upper[-1], p) <= 0:
+                upper.pop()
+            upper.append(p)
+        convex_hull = lower[:-1] + upper[:-1]
+        
+        return convex_hull
+    
+    def hull_area(self, polygon_points):
+        polygon=Polygon(polygon_points)
+        return polygon.area
+    
+    def radial_distribution(self, dr):
+        hull_max=self.convex_hull_creation()
+        weights=np.zeros(len(self.points), dtype=int)
+        x=np.zeros(len(self.points), dtype=int)
+        y=np.zeros(len(self.points), dtype=int)
+        weight=0
+        #R= int(np.min(np.ptp(self.points, axis=0))/(2))
+        x_bounds = (np.abs(self.points[0, :].max())-np.abs(self.points[0, :].min()))/2
+        y_bounds = (np.abs(self.points[1, :].max())-np.abs(self.points[1, :].min()))/2
+        R=np.sqrt(x_bounds**2+y_bounds**2)
+        #x_min = np.min(np.abs(x0) - np.array(x_bounds))
+        #y_min = np.min(np.abs(y0) - np.array(y_bounds))
+        
+        #R = int(min(abs(x_min), abs(y_min)))
+        g= np.zeros(math.ceil(R/dr), dtype=float)
+        #g= np.zeros(dr, dtype=float)
+        n=self.calculate_mean_density()
+
+        for i, _ in enumerate(np.arange(0, R, dr)):
+            g_r =np.zeros((len(self.points)))
+            for j, point in enumerate(self.points):
+                r_i=(i+0.5)*dr
+                radius_min = r_i-dr/2
+                radius_max = r_i+dr/2
+                area=2*np.pi*r_i*dr
+                N_i=self.find_points(point[0], point[1], radius_min, radius_max)
+                #print(r_i, area)
+                # adding weights
+                intersection=self.intersection_area(point,radius_max, hull_max)-self.intersection_area(point,radius_min, hull_max)
+                weight= area/intersection
+                #g_r[j]=N_i/(area*n)
+                g_r[j]= N_i*weight/(area*n)
+                weight=math.floor(1000*weight)
+                if np.abs(i-7)<=dr:
+                    weights[j]=weight
+                    x[j]=point[0]
+                    y[j]=point[1]
+            g[i]= np.mean(g_r)#N_i/(area*n)
+        return g, weights, x, y
