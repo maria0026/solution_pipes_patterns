@@ -73,41 +73,6 @@ class VoronoiAnalyser(BaseVoronoi):
         return self.df
     
 
-    def calculate_ripleys_k(self, r_vals, area):
-        """
-        Compute Ripley's K function for the Voronoi points.
-
-        Parameters:
-            r_vals (array-like): List of distances at which to compute K(r).
-
-        Returns:
-            DataFrame with 'r' values and 'K(r)' values.
-        """
-        distances=self.calculate_distance_between_neighbours()
-        print(np.shape(distances))
-        valid_points = self.df[self.df['Point of Voronoi'] == 1][["Center x coordinate", "Center y coordinate"]].values
-        n = len(valid_points)  # Number of valid Voronoi points
-        if n < 2:
-            print("Not enough points for Ripley's K function.")
-            return None
-        
-        lambda_hat = n / area  # Point intensity (density)
-        dist_matrix = distance_matrix(valid_points, valid_points)  # Compute distances
-        print(np.shape(dist_matrix))
-        k_values = []
-        for r in r_vals:
-            count = np.sum((dist_matrix > 0) & (dist_matrix <= r))  # Exclude self-distances
-            K_r = (area / (n * (n - 1))) * count  # Normalize
-            k_values.append(K_r)
-
-
-        # Store results
-        ripley_df = pd.DataFrame({'r': r_vals, 'K(r)': k_values})
-        self.df['Ripley K'] = np.interp(self.df['Area'], r_vals, k_values)  # Interpolate K values into df
-
-        return ripley_df
-
-
     def find_neighbors(self, x_center, y_center, radius):
         neighbors = set()
         for point in self.points:
