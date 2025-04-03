@@ -24,12 +24,21 @@ def read_data(path, preprocessed=False, add_geometric_center = False):
             value = line.strip().split()
             data.append(value)
 
-    if preprocessed:
-        columns = ["Pipe radius", "Center x coordinate", "Center y coordinate", "Point of Voronoi", "Area", "Region index"]
-    else:
-        columns = ["Pipe radius", "Center x coordinate", "Center y coordinate"]
+    num_columns = len(data[0]) if data else 0
 
-    df = pd.DataFrame(data, columns=columns)
+    if preprocessed:
+        expected_columns = ["Pipe radius", "Center x coordinate", "Center y coordinate", "Point of Voronoi", "Area", "Region index"]
+    else:
+        expected_columns = ["Pipe radius", "Center x coordinate", "Center y coordinate"]
+
+    if num_columns != len(expected_columns):
+        print(f"Warning: Expected {len(expected_columns)} columns, but found {num_columns}. Filling missing columns with ones.")
+        for i in range(len(data)):  # Iterate through each row
+            missing_values = [1] * (len(expected_columns) - len(data[i]))  # Generate synthetic ones
+            data[i] = missing_values + data[i]  
+            
+    df = pd.DataFrame(data, columns=expected_columns)
+
     
     df["Pipe radius"] = pd.to_numeric(df["Pipe radius"], errors="coerce")
     df["Center x coordinate"] = pd.to_numeric(df["Center x coordinate"], errors="coerce")
@@ -48,6 +57,7 @@ def read_data(path, preprocessed=False, add_geometric_center = False):
         df["Point of Voronoi"] = pd.to_numeric(df["Point of Voronoi"], errors="coerce")
         df["Area"] = pd.to_numeric(df["Area"], errors="coerce")
         df["Region index"] = pd.to_numeric(df["Region index"], errors="coerce")
+
 
     return df
 
