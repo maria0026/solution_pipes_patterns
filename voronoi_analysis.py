@@ -113,52 +113,7 @@ class VoronoiAnalyser(BaseVoronoi):
         return self.df
     
 
-    def ripley_K_function(self, r_values):
-        """
-        Oblicza funkcję K Ripleya dla zadanych promieni r.
-        
-        distances: macierz odległości między punktami (N x N)
-        r_values: tablica promieni, dla których liczymy K(r)
-        area: całkowita powierzchnia badanego obszaru
-        
-        Zwraca: tablicę wartości K(r)
-        """
-     
-        distances = self.calculate_distance_between_neighbours()
-        hull=self.convex_hull_creation()
-        max_area = self.hull_area(hull)
-        N = distances.shape[0]  # Liczba punktów
-        K_values = np.zeros_like(r_values, dtype=float)
-        L_values = np.zeros_like(r_values, dtype=float)
 
-        for i, r in enumerate(r_values):
-            #K_values[i] = (max_area) / (N** 2) * np.sum(distances <= r)
-            K_values[i] = (max_area) / (N*(N- 1)) * np.sum(distances <= r)
-            L_values[i] = math.sqrt(K_values[i] / np.pi) - r
-
-        return K_values, L_values
-
-    def calculate_ripleys_k(self, r_vals, area):
-
-        
-        valid_points = self.df[self.df['Point of Voronoi'] == 1][["Center x coordinate", "Center y coordinate"]].values
-        n = len(valid_points)  # Number of valid Voronoi point
-        
-        lambda_hat = n / area  # Point intensity (density)
-        dist_matrix = distance_matrix(valid_points, valid_points)  # Compute distances
-        print(np.shape(dist_matrix))
-        k_values = []
-        for r in r_vals:
-            count = np.sum((dist_matrix > 0) & (dist_matrix <= r))  # Exclude self-distances
-            K_r = (area / (n * (n - 1))) * count  # Normalize
-            k_values.append(K_r)
-
-
-        # Store results
-        ripley_df = pd.DataFrame({'r': r_vals, 'K(r)': k_values})
-        self.df['Ripley K'] = np.interp(self.df['Area'], r_vals, k_values)  # Interpolate K values into df
-
-        return ripley_df
     
 
     def find_points(self, x_center, y_center, radius_min, radius_max):
@@ -255,3 +210,123 @@ class VoronoiAnalyser(BaseVoronoi):
                     y[j]=point[1]
             g[i]= np.mean(g_r)#N_i/(area*n)
         return g, weights, x, y
+    
+
+
+    def calculate_ripleys_k(self, r_vals, area):
+
+        valid_points = self.df[self.df['Point of Voronoi'] == 1][["Center x coordinate", "Center y coordinate"]].values
+        n = len(valid_points)  # Number of valid Voronoi point
+        
+        lambda_hat = n / area  # Point intensity (density)
+        dist_matrix = distance_matrix(valid_points, valid_points)  # Compute distances
+        print(np.shape(dist_matrix))
+        k_values = []
+        for r in r_vals:
+            count = np.sum((dist_matrix > 0) & (dist_matrix <= r))  # Exclude self-distances
+            K_r = (area / (n * (n - 1))) * count  # Normalize
+            k_values.append(K_r)
+
+
+        # Store results
+        ripley_df = pd.DataFrame({'r': r_vals, 'K(r)': k_values})
+        self.df['Ripley K'] = np.interp(self.df['Area'], r_vals, k_values)  # Interpolate K values into df
+
+        return ripley_df
+
+
+
+    def ripley_K_function(self, r_values):
+        """
+        Oblicza funkcję K Ripleya dla zadanych promieni r.
+        
+        distances: macierz odległości między punktami (N x N)
+        r_values: tablica promieni, dla których liczymy K(r)
+        area: całkowita powierzchnia badanego obszaru
+        
+        Zwraca: tablicę wartości K(r)
+        """
+     
+        #distances = self.calculate_distance_between_neighbours()
+        hull=self.convex_hull_creation()
+        max_area = self.hull_area(hull)
+        N = len(self.points) #distances.shape[0]  # chcemy wszystkie, nie tylko voronoja
+        
+        K_values = np.zeros_like(r_values, dtype=float)
+        L_values = np.zeros_like(r_values, dtype=float)
+        K_sum = 0
+
+        for i, r in enumerate(r_values):  
+            for idx1, point1 in enumerate(self.points):
+                for idx2, point2 in enumerate(self.points):
+                    if idx1 == idx2:
+                        continue
+                    dist = np.linalg.norm(point1 - point2)
+                    if dist <= r:
+                        intersection = self.intersection_area(point1, r, hull)
+                        weight = (np.pi * r**2) / intersection  #chyba pole tym razem??
+                        K_sum += weight
+            
+            K_values[i] = (max_area) / (N * (N - 1)) * K_sum
+            L_values[i] = math.sqrt(K_values[i] / np.pi) - r
+        return K_values, L_values
+
+    def ripley_K_weighted(self, r_values):
+        """
+        Oblicza funkcję K Ripleya z wagami korygującymi dla brzegu (edge correction).
+        """
+       
+        N = len(self.points)
+        hull = self.convex_hull_creation()
+        max_area = self.hull_area(hull)
+        
+        # Macierz odległości (N x N)
+        dists = distance_matrix(self.points, self.points)
+        np.fill_diagonal(dists, np.inf)  # żeby nie liczyć punktów do siebie
+
+        K_values = []
+        for r in r_values:
+            area_circle = np.pi * r**2
+
+            # Wektory wag: jeden na punkt (nie na parę)
+            intersections = np.array([self.intersection_area(p, r, hull) for p in self.points])
+            weights = np.where(intersections > 0, area_circle / intersections, 0)
+
+            # Maska: które pary punktów są bliżej niż r
+            mask = dists <= r  # (N x N) macierz boolowska
+
+            # Mnożenie: maska * wagi nadawcy (punktu i)
+            weighted_counts = mask * weights[:, np.newaxis]  # Broadcasting: (N x 1) * (N x N)
+
+            # Sumujemy wszystkie ważone pary
+            count = np.sum(weighted_counts)
+
+            # Normalizacja Ripley'a K
+            K_r = (max_area / (N * (N - 1))) * count
+            K_values.append(K_r)
+        #L_values[i] = math.sqrt(K_values[i] / np.pi) - r
+
+        return K_values
+    
+
+    def ripley_2(self, r_values):
+
+        hull=self.convex_hull_creation()
+        max_area = self.hull_area(hull)
+        distances = self.calculate_distance_between_neighbours()
+        N = len(self.points) #distances.shape[0]  # chcemy wszystkie, nie tylko voronoja
+        
+        K_values = np.zeros_like(r_values, dtype=float)
+        L_values = np.zeros_like(r_values, dtype=float)
+
+        for i, r in enumerate(r_values):
+            k_r =np.zeros((len(self.points)))
+            for j, point in enumerate(self.points):
+                area=np.pi*r**2
+                intersection=self.intersection_area(point, r, hull)
+                weight= area/intersection
+                k_r[i] = np.sum(distances[j] <= r)/weight
+            K_values[i]= (max_area) / (N*(N- 1))  * np.mean(k_r)
+            L_values[i] = math.sqrt(K_values[i] / np.pi) - r
+
+        return K_values, L_values

@@ -46,7 +46,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("parser for solution pipes pattern analysis")
-    parser.add_argument("--data_path", nargs="?", default= "data/area2.dat", help="path of data", type=str)
+    parser.add_argument("--data_path", nargs="?", default= "data/write.dat", help="path of data", type=str)
     parser.add_argument("--area_limit", nargs="?", default=14.0, help="limit of area", type=float)
 
     args = parser.parse_args()
