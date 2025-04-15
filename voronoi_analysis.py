@@ -7,6 +7,7 @@ from scipy.spatial import distance_matrix
 import math
 from typing import Tuple
 from shapely.geometry import Point, Polygon
+from scipy.spatial.distance import cdist
 
 class VoronoiAnalyser(BaseVoronoi):
     def __init__(self, df):
@@ -111,54 +112,54 @@ class VoronoiAnalyser(BaseVoronoi):
                 self.df['Hexatic order']=np.sqrt(np.real(psi)**2 + np.imag(psi)**2)
 
         return self.df
-    
 
-    def ripley_K_function(self, r_values):
+
+    def distances_matrix(self):
+        return cdist(self.points, self.points)
+
+
+    def intersection_area_with_unit_square(self, x, y, r):
         """
-        Oblicza funkcję K Ripleya dla zadanych promieni r.
-        
-        distances: macierz odległości między punktami (N x N)
-        r_values: tablica promieni, dla których liczymy K(r)
-        area: całkowita powierzchnia badanego obszaru
-        
-        Zwraca: tablicę wartości K(r)
+        Calculates the intersection area between a circle centered at (x, y) with radius r
+        and a square from (-0.5, -0.5) to (0.5, 0.5).
         """
-     
-        distances = self.calculate_distance_between_neighbours()
+        # Define the unit square
+        square = Polygon([(-0.5, -0.5), (-0.5, 0.5), (0.5, 0.5), (0.5, -0.5)])
+
+        # Create the circle using a buffered point
+        circle = Point(x, y).buffer(r, resolution=256)  # resolution controls smoothness
+
+        # Compute the intersection
+        intersection = circle.intersection(square)
+
+        return intersection.area
+
+    def ripley_2(self, r_values):
+
         hull=self.convex_hull_creation()
         max_area = self.hull_area(hull)
-        N = distances.shape[0]  # Liczba punktów
+        distances = self.distances_matrix()
+        #print(distances)
+        N = len(self.points) #distances.shape[0]  # chcemy wszystkie, nie tylko voronoja
+        
         K_values = np.zeros_like(r_values, dtype=float)
         L_values = np.zeros_like(r_values, dtype=float)
 
         for i, r in enumerate(r_values):
-            #K_values[i] = (max_area) / (N** 2) * np.sum(distances <= r)
-            K_values[i] = (max_area) / (N*(N- 1)) * np.sum(distances <= r)
+            k_r =np.zeros((len(self.points)))
+            for j, point in enumerate(self.points):
+                area=np.pi*r**2
+                intersection=self.intersection_area(point, r, hull)
+                #intersection = self.intersection_area_with_unit_square(point[0], point[1], r)
+                weight= area/intersection
+                neighbors_within_r = np.sum(distances[j] <= r) 
+                k_r[j] = neighbors_within_r * weight
+
+            K_values[i] = (max_area / (N * (N - 1))) * np.sum(k_r)
+            #K_values[i]= (max_area) / (N*(N- 1))  * np.mean(k_r)
             L_values[i] = math.sqrt(K_values[i] / np.pi) - r
 
         return K_values, L_values
-
-    def calculate_ripleys_k(self, r_vals, area):
-
-        
-        valid_points = self.df[self.df['Point of Voronoi'] == 1][["Center x coordinate", "Center y coordinate"]].values
-        n = len(valid_points)  # Number of valid Voronoi point
-        
-        lambda_hat = n / area  # Point intensity (density)
-        dist_matrix = distance_matrix(valid_points, valid_points)  # Compute distances
-        print(np.shape(dist_matrix))
-        k_values = []
-        for r in r_vals:
-            count = np.sum((dist_matrix > 0) & (dist_matrix <= r))  # Exclude self-distances
-            K_r = (area / (n * (n - 1))) * count  # Normalize
-            k_values.append(K_r)
-
-
-        # Store results
-        ripley_df = pd.DataFrame({'r': r_vals, 'K(r)': k_values})
-        self.df['Ripley K'] = np.interp(self.df['Area'], r_vals, k_values)  # Interpolate K values into df
-
-        return ripley_df
     
 
     def find_points(self, x_center, y_center, radius_min, radius_max):
@@ -223,9 +224,9 @@ class VoronoiAnalyser(BaseVoronoi):
         y=np.zeros(len(self.points), dtype=int)
         weight=0
         #R= int(np.min(np.ptp(self.points, axis=0))/(2))
-        x_bounds = (np.abs(self.points[0, :].max())-np.abs(self.points[0, :].min()))/2
-        y_bounds = (np.abs(self.points[1, :].max())-np.abs(self.points[1, :].min()))/2
-        R=np.sqrt(x_bounds**2+y_bounds**2)
+        x_bounds = np.abs((self.points[0, :].max())-(self.points[0, :].min()))/2
+        y_bounds = np.abs(self.points[1, :].max())-(self.points[1, :].min())/2
+        R=np.sqrt(x_bounds**2 + y_bounds**2)
         #x_min = np.min(np.abs(x0) - np.array(x_bounds))
         #y_min = np.min(np.abs(y0) - np.array(y_bounds))
         
@@ -233,7 +234,7 @@ class VoronoiAnalyser(BaseVoronoi):
         g= np.zeros(math.ceil(R/dr), dtype=float)
         #g= np.zeros(dr, dtype=float)
         n=self.calculate_mean_density()
-
+        print("R", R)
         for i, _ in enumerate(np.arange(0, R, dr)):
             g_r =np.zeros((len(self.points)))
             for j, point in enumerate(self.points):
@@ -254,4 +255,4 @@ class VoronoiAnalyser(BaseVoronoi):
                     x[j]=point[0]
                     y[j]=point[1]
             g[i]= np.mean(g_r)#N_i/(area*n)
-        return g, weights, x, y
+        return g, weights, x, y, R

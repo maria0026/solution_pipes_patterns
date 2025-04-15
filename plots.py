@@ -8,7 +8,7 @@ import matplotlib.cm as cm
 class Voronoi_Plotter(VoronoiAnalyser):
     def __init__(self, df):
         super().__init__(df)
-        #self.voronoi_points = df["Point of Voronoi"]
+        self.voronoi_points = df["Point of Voronoi"]
 
     def all_voronoi_diagram(self):
         fig, ax = plt.subplots(figsize=(8, 6))
@@ -93,9 +93,11 @@ class Voronoi_Plotter(VoronoiAnalyser):
         plt.show()
 
 
-    def hexatic_order(self, hexatic_order, x_lim_min=20, x_lim_max=60, y_lim_min=30, y_lim_max=50):
+    def hexatic_order(self, hexatic_order, x_lim_min=20, x_lim_max=60, y_lim_min=30, y_lim_max=50, show_points=False):
         fig, ax = plt.subplots(figsize=(8, 6))
         voronoi_plot_2d(self.voronoi, ax=ax, show_points=False, show_vertices=False, line_width=0.5, line_colors='blue')
+        if show_points:
+            ax.plot(self.points[:, 0], self.points[:, 1], 'o', color='red', markersize=3)
 
         for j, region_index in enumerate(self.point_to_region):
             if (self.voronoi_points.iloc[j]) and (-1 not in self.regions[int(region_index)]):
