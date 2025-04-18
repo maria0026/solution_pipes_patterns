@@ -64,7 +64,7 @@ class VoronoiAnalyser(BaseVoronoi):
                     sum_theta += np.exp(1j * 6 * theta_jk)  # Apply 6-fold symmetry
                 
                 psi[j] = sum_theta / N_j 
-                print(psi[j])
+                #print(psi[j])
                 if absolute:
                     self.df['Hexatic order']=np.abs(psi)
                 else:

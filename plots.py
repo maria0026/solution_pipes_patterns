@@ -47,7 +47,7 @@ class Voronoi_Plotter(VoronoiAnalyser):
         for j, region_index in enumerate(self.point_to_region):
             if (self.voronoi_points.iloc[j]) and (-1 not in self.regions[int(region_index)]):
                 polygon = [self.vertices[i] for i in self.regions[int(region_index)]]
-                plt.fill(*zip(*polygon))
+                #plt.fill(*zip(*polygon))
                 
 
         plt.show()
@@ -93,7 +93,7 @@ class Voronoi_Plotter(VoronoiAnalyser):
         plt.show()
 
 
-    def hexatic_order(self, hexatic_order, x_lim_min=20, x_lim_max=60, y_lim_min=30, y_lim_max=50):
+    def hexatic_order(self, hexatic_order, x_lim_min=20, x_lim_max=60, y_lim_min=30, y_lim_max=50, save = False, name = None):
         fig, ax = plt.subplots(figsize=(8, 6))
         voronoi_plot_2d(self.voronoi, ax=ax, show_points=False, show_vertices=False, line_width=0.5, line_colors='blue')
 
@@ -108,12 +108,43 @@ class Voronoi_Plotter(VoronoiAnalyser):
         plt.colorbar(sm, ax=ax, label="Hexatic Order") 
         #plt.colorbar(cm.ScalarMappable(cmap=cm.viridis), label="Hexatic Order")  # Add color legend
 
-        ax.set_title("Voronoi Diagram", fontsize=16)
+        ax.set_title("Voronoi Diagram " + name, fontsize=16)
         ax.set_xlabel("X Coordinate", fontsize=14)
         ax.set_ylabel("Y Coordinate", fontsize=14)
         ax.grid(True)
         ax.set_xlim(x_lim_min, x_lim_max)
         ax.set_ylim(y_lim_min, y_lim_max)
+        plt.show() if save == False else plt.savefig("Figures/Order " + name)
+        
 
-        plt.show()
+    def hexatic_order_split(self, hexatic_order, grid_n=4, name="plot"):
+        x_min, x_max = self.points[:, 0].min(), self.points[:, 0].max()
+        y_min, y_max = self.points[:, 1].min(), self.points[:, 1].max()
+        
+        x_splits = np.linspace(x_min, x_max, grid_n + 1)
+        y_splits = np.linspace(y_min, y_max, grid_n + 1)
 
+        for i in range(grid_n):
+            for j in range(grid_n):
+                xlim_min, xlim_max = x_splits[i], x_splits[i+1]
+                ylim_min, ylim_max = y_splits[j], y_splits[j+1]
+
+                fig, ax = plt.subplots(figsize=(4, 4))
+                voronoi_plot_2d(self.voronoi, ax=ax, show_points=False, show_vertices=False, line_width=0.5, line_colors='blue')
+
+                for k, region_index in enumerate(self.point_to_region):
+                    if self.voronoi_points.iloc[k] and (-1 not in self.regions[int(region_index)]):
+                        polygon = [self.vertices[m] for m in self.regions[int(region_index)]]
+                        color = cm.viridis(hexatic_order[k])
+                        poly_x, poly_y = zip(*polygon)
+                        if (min(poly_x) > xlim_min and max(poly_x) < xlim_max and 
+                            min(poly_y) > ylim_min and max(poly_y) < ylim_max):
+                            plt.fill(poly_x, poly_y, color=color, alpha=0.7, edgecolor="black")
+
+                ax.set_xlim(xlim_min, xlim_max)
+                ax.set_ylim(ylim_min, ylim_max)
+                ax.axis('off')
+                plt.tight_layout()
+                #plt.savefig(f"Figures/{name}_part_{i}_{j}.png")
+                plt.savefig(f"new_figures/{name}.png")
+                plt.close()
