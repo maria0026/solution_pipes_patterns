@@ -4,6 +4,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from voronoi import BaseVoronoi
 import matplotlib.cm as cm
+import matplotlib.patches as patches
+from shapely.geometry import Point, Polygon, MultiPolygon
+from shapely.ops import unary_union
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+from descartes import PolygonPatch
 
 class Voronoi_Plotter(VoronoiAnalyser):
     def __init__(self, df):
@@ -29,28 +35,42 @@ class Voronoi_Plotter(VoronoiAnalyser):
 
         plt.show()
 
-    def all_voronoi_diagram_area_filtered(self, x_lim_min=20, x_lim_max=60, y_lim_min=30, y_lim_max=50):
+    def all_voronoi_diagram_area_filtered(self, x_lim_min=20, x_lim_max=60, y_lim_min=30, y_lim_max=50, fill=True):
+        hull_max=self.convex_hull_creation()
+        hull = np.array(hull_max)
+
+        # Close the polygon by adding the first point at the end
+        hull = np.vstack([hull, hull[0]])
+
         fig, ax = plt.subplots(figsize=(8, 6))
         voronoi_plot_2d(self.voronoi, ax=ax, show_vertices=False, line_width=2, line_colors='blue')
+        ax.plot(hull[:, 0], hull[:, 1], color='red', lw=2, label='Convex Hull', zorder=6)
+        circle_center = self.points[55]  # dowolny punkt, możesz zmienić
+        radius = 2
+        circle = patches.Circle(circle_center, radius, facecolor='magenta', edgecolor='black', alpha=0.3, zorder=4)
+        ax.add_patch(circle)
+                
 
         for i, point in enumerate(self.points):
             color = 'blue' if self.voronoi_points.iloc[i] else 'red'  # Assuming True/False values in 'Point of Voronoi'
             ax.scatter(point[0], point[1], s=3, color=color, zorder=5)
 
+        ax.scatter(circle_center[0], circle_center[1], s=4, color='magenta', zorder=5)
         ax.set_title("Voronoi Diagram", fontsize=16)
         ax.set_xlabel("X Coordinate", fontsize=14)
         ax.set_ylabel("Y Coordinate", fontsize=14)
         ax.grid(True)
         ax.set_xlim(x_lim_min, x_lim_max)
         ax.set_ylim(y_lim_min, y_lim_max)
-
-        for j, region_index in enumerate(self.point_to_region):
-            if (self.voronoi_points.iloc[j]) and (-1 not in self.regions[int(region_index)]):
-                polygon = [self.vertices[i] for i in self.regions[int(region_index)]]
-                plt.fill(*zip(*polygon))
+        if fill:
+            for j, region_index in enumerate(self.point_to_region):
+                if (self.voronoi_points.iloc[j]) and (-1 not in self.regions[int(region_index)]):
+                    polygon = [self.vertices[i] for i in self.regions[int(region_index)]]
+                    plt.fill(*zip(*polygon))
                 
 
         plt.show()
+
 
 
     def areas_hist(self,areas):
@@ -102,10 +122,10 @@ class Voronoi_Plotter(VoronoiAnalyser):
         for j, region_index in enumerate(self.point_to_region):
             if (self.voronoi_points.iloc[j]) and (-1 not in self.regions[int(region_index)]):
                 polygon = [self.vertices[i] for i in self.regions[int(region_index)]]
-                color = cm.viridis(hexatic_order[j])  # Assign color based on hexatic order
+                color = cm.CMRmap(hexatic_order[j])  # Assign color based on hexatic order
                 plt.fill(*zip(*polygon), color=color, alpha=0.7, edgecolor="black")  # Adjust transparency if needed
 
-        sm = cm.ScalarMappable(cmap=cm.viridis)
+        sm = cm.ScalarMappable(cmap=cm.CMRmap)
         sm.set_array(hexatic_order)
         plt.colorbar(sm, ax=ax, label="Hexatic Order") 
         #plt.colorbar(cm.ScalarMappable(cmap=cm.viridis), label="Hexatic Order")  # Add color legend

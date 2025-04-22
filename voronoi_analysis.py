@@ -65,7 +65,6 @@ class VoronoiAnalyser(BaseVoronoi):
                     sum_theta += np.exp(1j * 6 * theta_jk)  # Apply 6-fold symmetry
                 
                 psi[j] = sum_theta / N_j 
-                print(psi[j])
                 if absolute:
                     self.df['Hexatic order']=np.abs(psi)
                 else:
@@ -133,13 +132,12 @@ class VoronoiAnalyser(BaseVoronoi):
         intersection = circle.intersection(square)
 
         return intersection.area
-
-    def ripley_2(self, r_values):
+    
+    def ripley(self, r_values):
 
         hull=self.convex_hull_creation()
         max_area = self.hull_area(hull)
         distances = self.distances_matrix()
-        #print(distances)
         N = len(self.points) #distances.shape[0]  # chcemy wszystkie, nie tylko voronoja
         
         K_values = np.zeros_like(r_values, dtype=float)
@@ -156,8 +154,39 @@ class VoronoiAnalyser(BaseVoronoi):
                 k_r[j] = neighbors_within_r * weight
 
             K_values[i] = (max_area / (N * (N - 1))) * np.sum(k_r)
-            #K_values[i]= (max_area) / (N*(N- 1))  * np.mean(k_r)
             L_values[i] = math.sqrt(K_values[i] / np.pi) - r
+
+        return K_values, L_values
+    
+    def ripley_2(self, r_values):
+
+        hull=self.convex_hull_creation()
+        max_area = self.hull_area(hull)
+        distances = self.distances_matrix()
+        N = len(self.points)
+        distances_2=np.linalg.norm(self.points, axis=1)
+        mask = distances_2 <= 1
+        points = self.points[mask]
+        indices = np.where(mask)[0] 
+        n=len(points)
+        
+        K_values = np.zeros_like(r_values, dtype=float)
+        L_values = np.zeros_like(r_values, dtype=float)
+
+        for i, r in enumerate(r_values):
+            k_r =np.zeros((len(points)))
+            for j, (point, idx) in enumerate(zip(points, indices)):
+                area = np.pi * r**2
+                intersection = self.intersection_area(point, r, hull)
+                weight = area / intersection
+                neighbors_within_r = np.sum(distances[idx] <= r)
+                k_r[j] = neighbors_within_r  # * weight
+
+            #K_values[i] = (max_area / (N * (N - 1))) * np.sum(k_r)
+            #L_values[i] = math.sqrt(K_values[i] / np.pi) - r
+            K_values[i] = (max_area / (N * (n - 1))) * np.sum(k_r)
+            L_values[i] = math.sqrt(K_values[i] / np.pi) - r
+
 
         return K_values, L_values
     

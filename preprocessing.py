@@ -32,6 +32,8 @@ def main(args):
     x_min, x_max = df["Center x coordinate"].min(), df["Center x coordinate"].max()
     y_min, y_max = df["Center y coordinate"].min(), df["Center y coordinate"].max()
     num_points = len(voronoi_preprocessor.points)
+    num_points=10000
+    x_min, x_max, y_min, y_max=0,10,0,10
     random_df=prepare_data.prepare_mock_data(x_min, x_max, y_min, y_max, num_points)
     voronoi_preprocessor = prepare_data.VoronoiPreprocess(random_df)
     areas=voronoi_preprocessor.calculate_areas()
@@ -46,7 +48,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("parser for solution pipes pattern analysis")
-    parser.add_argument("--data_path", nargs="?", default= "data/area1.dat", help="path of data", type=str)
+    parser.add_argument("--data_path", nargs="?", default= "data/Apulia_Santa_Sabina_Area4.dat", help="path of data", type=str)
     parser.add_argument("--area_limit", nargs="?", default=14.0, help="limit of area", type=float)
 
     args = parser.parse_args()
